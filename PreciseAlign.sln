@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreciseAlign.WPF", "PreciseAlign.WPF\PreciseAlign.WPF.csproj", "{BBD097D7-E47A-4E58-9F4F-0059EA0AAC51}"
+	ProjectSection(ProjectDependencies) = postProject
+		{04C02C1D-CD12-4DF8-BD34-C6616B858E77} = {04C02C1D-CD12-4DF8-BD34-C6616B858E77}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreciseAlign.Core", "PreciseAlign.Core\PreciseAlign.Core.csproj", "{04C02C1D-CD12-4DF8-BD34-C6616B858E77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BBD097D7-E47A-4E58-9F4F-0059EA0AAC51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBD097D7-E47A-4E58-9F4F-0059EA0AAC51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBD097D7-E47A-4E58-9F4F-0059EA0AAC51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBD097D7-E47A-4E58-9F4F-0059EA0AAC51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04C02C1D-CD12-4DF8-BD34-C6616B858E77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04C02C1D-CD12-4DF8-BD34-C6616B858E77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04C02C1D-CD12-4DF8-BD34-C6616B858E77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04C02C1D-CD12-4DF8-BD34-C6616B858E77}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {97F3961E-9A91-49F3-AB5F-76C591093EC0}
+	EndGlobalSection
+EndGlobal
