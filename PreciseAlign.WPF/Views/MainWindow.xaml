@@ -3,35 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PreciseAlign.WPF"
+        xmlns:local="clr-namespace:PreciseAlign.WPF.Views"
         mc:Ignorable="d"
         Title="PreciseAlign Pro - High Precision Visual Alignment System" 
         Height="800" Width="1280"
         WindowStartupLocation="CenterScreen"
-        MinWidth="1024" MinHeight="768"
-        Foreground="{StaticResource ForegroundBrush}"
-        Background="{StaticResource AppBackgroundBrush}">
+        MinWidth="1024" MinHeight="768">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1E1E1E"/>
-        <SolidColorBrush x:Key="ContentBackgroundBrush" Color="#2D2D2D"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#4A4A4A"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#E1E1E1"/>
-        <SolidColorBrush x:Key="ForegroundSubtleBrush" Color="#A0A0A0"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#007ACC"/>
-        <SolidColorBrush x:Key="AccentMouseOverBrush" Color="#1F93E0"/>
-        <SolidColorBrush x:Key="StatusGreenBrush" Color="#388E3C"/>
-        <SolidColorBrush x:Key="StatusRedBrush" Color="#D32F2F"/>
-
         <Style TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         </Style>
 
         <Style TargetType="Border">
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Background" Value="{StaticResource ContentBackgroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ContentBackgroundBrush}"/>
         </Style>
 
         <Style x:Key="IconButton" TargetType="Button">
@@ -39,7 +28,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -58,7 +47,7 @@
         </Style>
 
         <Style x:Key="MainControlButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -67,15 +56,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="4"
-                                SnapsToDevicePixels="True">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentMouseOverBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentMouseOverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Opacity" Value="0.5"/>
@@ -87,12 +73,12 @@
         </Style>
 
         <Style x:Key="ProcessStepButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource ContentBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ContentBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -107,17 +93,18 @@
                     <Setter Property="Background" Value="#3F3F3F"/>
                 </Trigger>
                 <Trigger Property="Tag" Value="Current">
-                    <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
                     <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="GroupBox">
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GroupBox">
@@ -129,10 +116,11 @@
                             <Border Grid.Row="0" Grid.RowSpan="2" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4"/>
                             <TextBlock Text="{TemplateBinding Header}" 
                                        FontWeight="Bold" 
-                                       Foreground="{StaticResource ForegroundSubtleBrush}"
-                                       Margin="10,0,0,0" 
-                                       VerticalAlignment="Center"
-                                       Background="{StaticResource AppBackgroundBrush}"
+                                       Foreground="{DynamicResource ForegroundSubtleBrush}"
+                                       Margin="10,-8,0,0" 
+                                       VerticalAlignment="Top"
+                                       Background="{DynamicResource AppBackgroundBrush}"
+                                       Padding="5,0"
                                        Panel.ZIndex="1"/>
                             <ContentPresenter Grid.Row="1" Margin="{TemplateBinding Padding}"/>
                         </Grid>
@@ -142,7 +130,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
             <RowDefinition Height="60"/>
@@ -150,43 +138,39 @@
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="0" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{DynamicResource ContentBackgroundBrush}" CornerRadius="0" BorderThickness="0,0,0,1">
             <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="PreciseAlign Pro" FontSize="18" FontWeight="SemiBold" Margin="10,0,0,0"/>
                 </StackPanel>
-
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="当前配方:" Foreground="{StaticResource ForegroundSubtleBrush}" Margin="0,0,10,0"/>
-                    <ComboBox Width="150" SelectedIndex="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="当前配方:" Foreground="{DynamicResource ForegroundSubtleBrush}" Margin="0,0,10,0"/>
+                    <ComboBox Width="150" SelectedIndex="0" VerticalAlignment="Center">
                         <ComboBoxItem Content="G1234-56"/>
                         <ComboBoxItem Content="M9876-21"/>
-                        
                     </ComboBox>
                 </StackPanel>
-
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,5,0"><Run Text="PLC:"/><Run Text="🟢" Foreground="{StaticResource StatusGreenBrush}"/></TextBlock>
-                    <TextBlock Margin="10,0,5,0"><Run Text="PC:"/><Run Text="🟢" Foreground="{StaticResource StatusGreenBrush}"/></TextBlock>
+                    <TextBlock Margin="0,0,5,0"><Run Text="PLC:"/><Run Text="🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
+                    <TextBlock Margin="10,0,5,0"><Run Text="PC:"/><Run Text="🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
                     <TextBlock Text="用户:Admin" Margin="15,0,0,0"/>
-                    <Button Content="⚙" ToolTip="设置" Style="{StaticResource IconButton}" Margin="15,0,0,0"/>
-                    <Button Content="🌙" ToolTip="切换主题" Style="{StaticResource IconButton}" Margin="5,0,0,0"/>
+                    <Button Content="⚙" ToolTip="设置" Style="{DynamicResource IconButton}" Margin="15,0,0,0"/>
+                    <Button x:Name="ThemeToggleButton" Content="🌙" ToolTip="切换主题" Style="{DynamicResource IconButton}" Margin="5,0,0,0" Click="ThemeToggleButton_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="(1) 初始定位" Style="{StaticResource ProcessStepButton}" Tag="Current"/>
-            <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{StaticResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(2) 滴胶检查" Style="{StaticResource ProcessStepButton}"/>
-            <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{StaticResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(3) COG 贴附" Style="{StaticResource ProcessStepButton}"/>
+            <Button Content="(1) 基板定位" Style="{DynamicResource ProcessStepButton}" Tag="Current"/>
+            <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
+            <Button Content="(2) 精密对位" Style="{DynamicResource ProcessStepButton}"/>
+            <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
+            <Button Content="(3) 贴附检查" Style="{DynamicResource ProcessStepButton}"/>
         </StackPanel>
 
         <Grid Grid.Row="2" Margin="10">
@@ -194,12 +178,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="350"/>
             </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                <Border>
+            <Grid Grid.Column="0" Margin="0,0,10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Margin="0,0,5,0">
                     <Grid>
-                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 1 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource ForegroundSubtleBrush}"/>
-
+                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 1 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundSubtleBrush}"/>
                         <TextBlock Text="Camera 1 (左Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
                             <StackPanel.Resources>
@@ -217,24 +203,20 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-
-                <Border Margin="0,10,0,0">
+                <Border Grid.Column="1" Margin="5,0,0,0">
                     <Grid>
-                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 2 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource ForegroundSubtleBrush}"/>
+                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 2 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundSubtleBrush}"/>
                         <TextBlock Text="Camera 2 (右Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                     </Grid>
                 </Border>
-            </StackPanel>
-
+            </Grid>
             <DockPanel Grid.Column="1">
-                <GroupBox Header="设备主控" DockPanel.Dock="Top">
-                    <UniformGrid Columns="3" Rows="1">
-                        <Button Content="▶️ 循环启动" Style="{StaticResource MainControlButton}" Margin="2"/>
-                        <Button Content="⏸️ 暂停" Style="{StaticResource MainControlButton}" Margin="2" IsEnabled="False"/>
-                        <Button Content="⏹️ 停止" Style="{StaticResource MainControlButton}" Margin="2" Background="#B71C1C"/>
+                <GroupBox Header="参数教导 (Teach)" DockPanel.Dock="Top">
+                    <UniformGrid Columns="2" Rows="1">
+                        <Button Content="教导参数 0 (相机1)" Style="{DynamicResource MainControlButton}" Margin="2"/>
+                        <Button Content="教导参数 1 (相机2)" Style="{DynamicResource MainControlButton}" Margin="2"/>
                     </UniformGrid>
                 </GroupBox>
-
                 <GroupBox Header="实时数据" DockPanel.Dock="Top" Margin="0,10,0,0">
                     <Grid Margin="5">
                         <Grid.ColumnDefinitions>
@@ -248,36 +230,31 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="X:" FontWeight="Bold"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="123.456 mm" Margin="5,0"/>
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="ΔX:" FontWeight="Bold" Foreground="{StaticResource StatusGreenBrush}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="+0.002 mm" Margin="5,0" Foreground="{StaticResource StatusGreenBrush}"/>
-
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="ΔX:" FontWeight="Bold" Foreground="{DynamicResource StatusGreenBrush}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="+0.002 mm" Margin="5,0" Foreground="{DynamicResource StatusGreenBrush}"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Y:" FontWeight="Bold"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="78.901 mm" Margin="5,0"/>
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="ΔY:" FontWeight="Bold" Foreground="{StaticResource StatusRedBrush}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="3" Text="-0.001 mm" Margin="5,0" Foreground="{StaticResource StatusRedBrush}"/>
-
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="ΔY:" FontWeight="Bold" Foreground="{DynamicResource StatusRedBrush}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="-0.001 mm" Margin="5,0" Foreground="{DynamicResource StatusRedBrush}"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="θ:" FontWeight="Bold"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="0.000 deg" Margin="5,0"/>
                         <TextBlock Grid.Row="2" Grid.Column="2" Text="Δθ:" FontWeight="Bold"/>
                         <TextBlock Grid.Row="2" Grid.Column="3" Text="+0.001 deg" Margin="5,0"/>
                     </Grid>
                 </GroupBox>
-
                 <GroupBox Header="运行日志" Margin="0,10,0,0">
-                    <ListView Background="Transparent" BorderThickness="0" Foreground="{StaticResource ForegroundSubtleBrush}">
+                    <ListView Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ForegroundSubtleBrush}">
                         <ListViewItem Content="12:06:50 [INFO] 设备初始化完成"/>
                         <ListViewItem Content="12:06:48 [INFO] PLC连接成功"/>
-                        <ListViewItem Content="12:06:45 [ERROR] 相机2连接失败: Not found" Foreground="{StaticResource StatusRedBrush}"/>
+                        <ListViewItem Content="12:06:45 [ERROR] 相机2连接失败: Not found" Foreground="{DynamicResource StatusRedBrush}"/>
                     </ListView>
                 </GroupBox>
             </DockPanel>
-
         </Grid>
 
-        <StatusBar Grid.Row="3" Background="{StaticResource AccentBrush}">
+        <StatusBar Grid.Row="3" Background="{DynamicResource AccentBrush}">
             <StatusBarItem>
                 <TextBlock Text="状态: 空闲" Foreground="White" FontWeight="Bold"/>
             </StatusBarItem>
@@ -290,7 +267,7 @@
                 <TextBlock Text="良率: N/A" Foreground="White"/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Text="2025-09-29 00:06:50" Foreground="White"/>
+                <TextBlock Text="2025-09-29 01:05:04" Foreground="White"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>
