@@ -14,7 +14,7 @@ namespace PreciseAlign.WPF.Views
 {
     public partial class MainWindow : Window
     {
-        private bool _isLightTheme = false;
+        private bool _isLightTheme = true;
 
         public MainWindow()
         {

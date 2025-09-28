@@ -3,13 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PreciseAlign.WPF.Views"
+        xmlns:local="clr-namespace:PreciseAlign.WPF.Views" 
+        xmlns:viewmodels="clr-namespace:PreciseAlign.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="PreciseAlign Pro - High Precision Visual Alignment System" 
+        Title="PreciseAlign Pro - COG对位系统" 
         Height="800" Width="1280"
         WindowStartupLocation="CenterScreen"
         MinWidth="1024" MinHeight="768">
-
     <Window.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -156,8 +156,8 @@
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,5,0"><Run Text="PLC:"/><Run Text="🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
-                    <TextBlock Margin="10,0,5,0"><Run Text="PC:"/><Run Text="🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
+                    <TextBlock Margin="0,0,5,0"><Run Text="PLC:"/><Run Text=" 🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
+                    <TextBlock Margin="10,0,5,0"><Run Text="PC:"/><Run Text=" 🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
                     <TextBlock Text="用户:Admin" Margin="15,0,0,0"/>
                     <Button Content="⚙" ToolTip="设置" Style="{DynamicResource IconButton}" Margin="15,0,0,0"/>
                     <Button x:Name="ThemeToggleButton" Content="🌙" ToolTip="切换主题" Style="{DynamicResource IconButton}" Margin="5,0,0,0" Click="ThemeToggleButton_Click"/>
@@ -207,6 +207,20 @@
                     <Grid>
                         <TextBlock Text="[ HALCON / HIKVISION CONTROL 2 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundSubtleBrush}"/>
                         <TextBlock Text="Camera 2 (右Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
+                            <StackPanel.Resources>
+                                <Style TargetType="Button" BasedOn="{StaticResource IconButton}">
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Width" Value="28"/>
+                                    <Setter Property="Height" Value="28"/>
+                                    <Setter Property="Background" Value="#80000000"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <Button Content="🔍+" ToolTip="放大"/>
+                            <Button Content="1:1" ToolTip="1:1显示" Margin="5,0"/>
+                            <Button Content="🔒" ToolTip="锁定画面"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>
@@ -267,7 +281,7 @@
                 <TextBlock Text="良率: N/A" Foreground="White"/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Text="2025-09-29 01:05:04" Foreground="White"/>
+                <TextBlock Text="{Binding CurrentTime}" Foreground="White"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>
