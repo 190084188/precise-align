@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:PreciseAlign.WPF"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1E1E1E"/>
+            <SolidColorBrush x:Key="ContentBackgroundBrush" Color="#2D2D2D"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#4A4A4A"/>
+            <SolidColorBrush x:Key="ForegroundBrush" Color="#E1E1E1"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
