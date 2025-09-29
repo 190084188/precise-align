@@ -7,6 +7,6 @@
     <SolidColorBrush x:Key="ForegroundSubtleBrush" Color="#A0A0A0"/>
     <SolidColorBrush x:Key="AccentBrush" Color="#007ACC"/>
     <SolidColorBrush x:Key="AccentMouseOverBrush" Color="#1F93E0"/>
-    <SolidColorBrush x:Key="StatusGreenBrush" Color="#388E3C"/>
+    <SolidColorBrush x:Key="StatusGreenBrush" Color="#FF38D23C"/>
     <SolidColorBrush x:Key="StatusRedBrush" Color="#D32F2F"/>
 </ResourceDictionary>

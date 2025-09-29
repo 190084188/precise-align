@@ -166,11 +166,11 @@
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="(1) 基板定位" Style="{DynamicResource ProcessStepButton}" Tag="Current"/>
+            <Button Content="(1) ACF对位" Style="{DynamicResource ProcessStepButton}" Tag="Current"/>
             <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(2) 精密对位" Style="{DynamicResource ProcessStepButton}"/>
+            <Button Content="(2) ACF贴附后检查" Style="{DynamicResource ProcessStepButton}"/>
             <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(3) 贴附检查" Style="{DynamicResource ProcessStepButton}"/>
+            <Button Content="(3) COG对位" Style="{DynamicResource ProcessStepButton}"/>
         </StackPanel>
 
         <Grid Grid.Row="2" Margin="10">

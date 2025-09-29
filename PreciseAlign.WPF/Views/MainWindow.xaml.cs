@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using PreciseAlign.WPF.ViewModels;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.Views
 {
@@ -19,6 +22,7 @@ namespace PreciseAlign.WPF.Views
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new MainViewModel(null, null);
         }
 
         private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
@@ -49,6 +53,13 @@ namespace PreciseAlign.WPF.Views
                 // 如果文件没找到或XAML解析错误，会在这里捕获到异常
                 Debug.WriteLine($"Error switching theme: {ex.Message}");
                 MessageBox.Show($"切换主题失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.Dispose();
             }
         }
     }
