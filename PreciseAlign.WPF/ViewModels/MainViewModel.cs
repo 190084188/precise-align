@@ -1,12 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PreciseAlign.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.ViewModels
@@ -18,6 +12,7 @@ namespace PreciseAlign.WPF.ViewModels
         private readonly DispatcherTimer _timer;
 
         [ObservableProperty]
+        // 右下角当前时间数据
         private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         // ... 其他服务
 
@@ -26,9 +21,9 @@ namespace PreciseAlign.WPF.ViewModels
             _camera = camera;
             _visionProcessor = visionProcessor;
             // ...
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
 
-            // 使用 lambda 表达式订阅
+            // 右下角当前时间数据定时刷新Timer
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += OnTimerTick;
             _timer.Start();
         }
@@ -36,6 +31,7 @@ namespace PreciseAlign.WPF.ViewModels
         {
             CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
+
         [RelayCommand]
         private async Task StartAlignment()
         {
@@ -47,6 +43,7 @@ namespace PreciseAlign.WPF.ViewModels
         }
         public void Dispose()
         {
+            //清理刷新时间的Timer
             if (_timer != null)
             {
                 _timer.Stop();
