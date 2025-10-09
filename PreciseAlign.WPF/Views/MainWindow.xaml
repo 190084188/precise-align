@@ -185,7 +185,7 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Margin="0,0,5,0">
                     <Grid>
-                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 1 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundSubtleBrush}"/>
+                        <Image Source="{Binding Camera1ImageSource}" Stretch="Uniform" />
                         <TextBlock Text="Camera 1 (左Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
                             <StackPanel.Resources>
@@ -205,7 +205,7 @@
                 </Border>
                 <Border Grid.Column="1" Margin="5,0,0,0">
                     <Grid>
-                        <TextBlock Text="[ HALCON / HIKVISION CONTROL 2 ]" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundSubtleBrush}"/>
+                        <Image Source="{Binding Camera2ImageSource}" Stretch="Uniform" />
                         <TextBlock Text="Camera 2 (右Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
                             <StackPanel.Resources>

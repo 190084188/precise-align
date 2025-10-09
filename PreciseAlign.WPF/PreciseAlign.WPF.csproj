@@ -6,15 +6,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Assets\Images\boe_logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\Images\boe_logo.ico" />
+    <Compile Remove="新文件夹\**" />
+    <EmbeddedResource Remove="新文件夹\**" />
+    <None Remove="新文件夹\**" />
+    <Page Remove="新文件夹\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Config\" />
+    <Content Include="Assets\Images\boe_logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,5 +32,41 @@
   <ItemGroup>
     <ProjectReference Include="..\PreciseAlign.Core\PreciseAlign.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AxAltairUDrv">
+      <HintPath>Assemblies\AltairDll\AxAltairUDrv.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AxAltairUDrvAsm4.5">
+      <HintPath>Assemblies\AltairDll\AxAltairUDrvAsm4.5.dll</HintPath>
+      <Private>True</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="AxOvkBase">
+      <HintPath>Assemblies\AltairDll\AxOvkBase.dll</HintPath>
+      <Private>True</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="AxOvkBaseAsm4.5">
+      <HintPath>Assemblies\AltairDll\AxOvkBaseAsm4.5.dll</HintPath>
+      <Private>True</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Config\Config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<!-- 确保目标目录存在，如果不存在则创建 -->
+		<MakeDir Directories="$(TargetDir)Config" Condition="!Exists('$(TargetDir)Config')" />
+		<!-- 执行 xcopy 命令 -->
+		<Exec Command="xcopy /s /e /y &quot;$(ProjectDir)Config&quot; &quot;$(TargetDir)Config&quot;" />
+	</Target>
 
 </Project>

@@ -1,18 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using PreciseAlign.WPF.ViewModels;
+﻿using PreciseAlign.WPF.ViewModels;
 using System.Diagnostics;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.Views
 {
@@ -20,10 +9,10 @@ namespace PreciseAlign.WPF.Views
     {
         private bool _isLightTheme = true;
 
-        public MainWindow()
+        public MainWindow(MainViewModel viewModel)
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel(null, null);
+            this.DataContext = viewModel;
         }
 
         private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
@@ -41,8 +30,8 @@ namespace PreciseAlign.WPF.Views
                     Source = new Uri(themeUri, UriKind.Relative)
                 };
 
-                Application.Current.Resources.MergedDictionaries.Clear();
-                Application.Current.Resources.MergedDictionaries.Add(newTheme);
+                System.Windows.Application.Current.Resources.MergedDictionaries.Clear();
+                System.Windows.Application.Current.Resources.MergedDictionaries.Add(newTheme);
 
                 ThemeToggleButton.Content = _isLightTheme ? "🌙" : "☀️";
                 _isLightTheme = !_isLightTheme;
@@ -53,7 +42,7 @@ namespace PreciseAlign.WPF.Views
             {
                 // 如果文件没找到或XAML解析错误，会在这里捕获到异常
                 Debug.WriteLine($"Error switching theme: {ex.Message}");
-                MessageBox.Show($"切换主题失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"切换主题失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         private void MainWindow_Closed(object sender, EventArgs e)
@@ -64,6 +53,7 @@ namespace PreciseAlign.WPF.Views
             }
         }
 
+        #region 禁用双击图标关闭程序
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
@@ -97,5 +87,6 @@ namespace PreciseAlign.WPF.Views
 
             return IntPtr.Zero;
         }
+        #endregion
     }
 }
