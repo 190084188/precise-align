@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PreciseAlign.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
-using PreciseAlign.Core.Interfaces;
+using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.ViewModels
 {

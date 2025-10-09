@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -61,6 +62,40 @@ namespace PreciseAlign.WPF.Views
             {
                 viewModel.Dispose();
             }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            // 获取窗口句柄并添加消息钩子
+            if (PresentationSource.FromVisual(this) is HwndSource source)
+            {
+                source.AddHook(WndProc);
+            }
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            // 系统命令消息
+            if (msg == 0x0112)
+            {
+                int command = wParam.ToInt32();
+
+                // 由双击窗口图标触发的特定系统命令
+                // SC_CLOSE (0xF060) | HTSYSMENU (3)
+                // SC_MOUSEMENU (0xF090) | HTSYSMENU (3)
+                // 拦截关闭命令和双击图标命令
+                if (command == 0xF063 || command == 0xF093)
+                {
+                    // 阻止默认行为
+                    handled = true;
+
+                    return IntPtr.Zero;
+                }
+            }
+
+            return IntPtr.Zero;
         }
     }
 }
