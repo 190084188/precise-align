@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PreciseAlign.WPF.Views" 
         xmlns:viewmodels="clr-namespace:PreciseAlign.WPF.ViewModels"
+        xmlns:converters="clr-namespace:PreciseAlign.WPF.Converters" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="PreciseAlign Pro - COG对位系统" 
         Height="800" Width="1280"
@@ -128,6 +129,10 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <converters:StepNameToTagConverter x:Key="StepNameToTagConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
     </Window.Resources>
 
     <Grid Background="{DynamicResource AppBackgroundBrush}">
@@ -159,6 +164,11 @@
                     <TextBlock Margin="0,0,5,0"><Run Text="PLC:"/><Run Text=" 🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
                     <TextBlock Margin="10,0,5,0"><Run Text="PC:"/><Run Text=" 🟢" Foreground="{DynamicResource StatusGreenBrush}"/></TextBlock>
                     <TextBlock Text="用户:Admin" Margin="15,0,0,0"/>
+                    <Button Content="🎥" ToolTip="相机设置" 
+                            Style="{DynamicResource IconButton}" 
+                            Margin="15,0,0,0"
+                            Command="{Binding ShowGlobalControlPanelCommand}"
+                            Visibility="{Binding IsAltairCameraPresent, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     <Button Content="⚙" ToolTip="设置" Style="{DynamicResource IconButton}" Margin="15,0,0,0"/>
                     <Button x:Name="ThemeToggleButton" Content="🌙" ToolTip="切换主题" Style="{DynamicResource IconButton}" Margin="5,0,0,0" Click="ThemeToggleButton_Click"/>
                 </StackPanel>
@@ -166,11 +176,26 @@
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="(1) ACF对位" Style="{DynamicResource ProcessStepButton}" Tag="Current"/>
+
+            <Button Content="(1) ACF对位" Style="{DynamicResource ProcessStepButton}"
+                    Command="{Binding SelectProcessStepCommand}"
+                    CommandParameter="ACF_Alignment"
+                    Tag="{Binding CurrentStepName, Converter={StaticResource StepNameToTagConverter}, ConverterParameter='ACF_Alignment'}"/>
+
             <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(2) ACF贴附后检查" Style="{DynamicResource ProcessStepButton}"/>
+
+            <Button Content="(2) ACF贴附后检查" Style="{DynamicResource ProcessStepButton}"
+                    Command="{Binding SelectProcessStepCommand}"
+                    CommandParameter="ACF_PostInspection"
+                    Tag="{Binding CurrentStepName, Converter={StaticResource StepNameToTagConverter}, ConverterParameter='ACF_PostInspection'}"/>
+
             <Path Data="M0,0 L10,10 L0,20 Z" Stroke="{DynamicResource ForegroundSubtleBrush}" StrokeThickness="1" Margin="10,0" VerticalAlignment="Center"/>
-            <Button Content="(3) COG对位" Style="{DynamicResource ProcessStepButton}"/>
+
+            <Button Content="(3) COG对位" Style="{DynamicResource ProcessStepButton}"
+                    Command="{Binding SelectProcessStepCommand}"
+                    CommandParameter="COG_Alignment"
+                    Tag="{Binding CurrentStepName, Converter={StaticResource StepNameToTagConverter}, ConverterParameter='COG_Alignment'}"/>
+
         </StackPanel>
 
         <Grid Grid.Row="2" Margin="10">
@@ -185,7 +210,7 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Margin="0,0,5,0">
                     <Grid>
-                        <Image Source="{Binding Camera1ImageSource}" Stretch="Uniform" />
+                        <Image Source="{Binding LeftDisplayImageSource}" Stretch="Uniform" />
                         <TextBlock Text="Camera 1 (左Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
                             <StackPanel.Resources>
@@ -205,7 +230,7 @@
                 </Border>
                 <Border Grid.Column="1" Margin="5,0,0,0">
                     <Grid>
-                        <Image Source="{Binding Camera2ImageSource}" Stretch="Uniform" />
+                        <Image Source="{Binding RightDisplayImageSource}" Stretch="Uniform" />
                         <TextBlock Text="Camera 2 (右Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
                             <StackPanel.Resources>

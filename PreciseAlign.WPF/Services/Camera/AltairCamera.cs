@@ -2,9 +2,10 @@
 using PreciseAlign.Core.Interfaces;
 using PreciseAlign.Core.Models;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows; // 需要引入WPF的Application
+using System.Windows;
 
 namespace PreciseAlign.WPF.Services.Camera
 {
@@ -25,6 +26,21 @@ namespace PreciseAlign.WPF.Services.Camera
         public event EventHandler<ImageReadyEventArgs>? ImageReady;
         //OnSurfaceFilled事件处理器委托
         private readonly IAxAltairUEvents_OnSurfaceFilledEventHandler _onSurfaceFilledHandler;
+
+        public double Exposure
+        {
+            // 使用文档中的 ElShutter 属性
+            get => _axCamera.ElShutter;
+            set => _axCamera.ElShutter = (int)value;
+        }
+
+        public double Gain
+        {
+            // 使用文档中的 VGain 属性
+            get => _axCamera.VGain;
+            set => _axCamera.VGain = (int)value;
+        }
+
         // 构造函数设为私有
         private AltairCamera(string cameraId, AxAxAltairU cameraInstance)
         {
@@ -109,6 +125,12 @@ namespace PreciseAlign.WPF.Services.Camera
             _axCamera.DestroyChannel();
         }
 
+        public void ShowControlPanel()
+        {
+            // 使用SDK中的 ShowControlPanel 方法
+            _axCamera.ShowControlPanel=true;
+        }
+
         public void SetTriggerMode(bool isTriggerEnabled)
         {
             if (!IsConnected) return;
@@ -133,20 +155,6 @@ namespace PreciseAlign.WPF.Services.Camera
 
             // 使用文档中的 Snap(1) 方法来采集单张图像
             Task.Run(() => _axCamera.Snap(1));
-        }
-
-        public double Exposure
-        {
-            // 使用文档中的 ElShutter 属性
-            get => _axCamera.ElShutter;
-            set => _axCamera.ElShutter = (int)value;
-        }
-
-        public double Gain
-        {
-            // 使用文档中的 VGain 属性
-            get => _axCamera.VGain;
-            set => _axCamera.VGain = (int)value;
         }
 
         private string ConvertPixelFormat(int sdkColorFormat)

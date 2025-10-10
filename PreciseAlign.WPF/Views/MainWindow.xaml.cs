@@ -1,8 +1,10 @@
 ﻿using PreciseAlign.WPF.ViewModels;
+using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Interop;
-
 namespace PreciseAlign.WPF.Views
 {
     public partial class MainWindow : Window

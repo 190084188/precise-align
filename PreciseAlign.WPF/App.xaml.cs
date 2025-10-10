@@ -28,7 +28,9 @@ namespace PreciseAlign.WPF
         private void ConfigureServices(IServiceCollection services)
         {
             // 1. 注册配置服务和相机工厂
-            services.AddSingleton<IConfigService, ConfigService>();
+            services.AddSingleton<ConfigService>();
+            services.AddSingleton<IConfigService>(provider => provider.GetRequiredService<ConfigService>());
+            services.AddSingleton<IProcessConfigService>(provider => provider.GetRequiredService<ConfigService>());
             services.AddSingleton<CameraFactory>();
             // 2. 动态注册相机实例
             // 直接从容器解析出服务来使用
@@ -36,6 +38,7 @@ namespace PreciseAlign.WPF
             var configService = tempProvider.GetRequiredService<IConfigService>();
             var cameraFactory = tempProvider.GetRequiredService<CameraFactory>();
             var cameraConfigs = configService.GetCameraConfigurations();
+            // config键值对，cameraConfigs是字典
             foreach (var config in cameraConfigs)
             {
                 // config.Key 是 "Cam0", "Cam1" 等
