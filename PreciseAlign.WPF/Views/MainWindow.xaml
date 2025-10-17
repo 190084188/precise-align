@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PreciseAlign.WPF.Views" 
         xmlns:viewmodels="clr-namespace:PreciseAlign.WPF.ViewModels"
-        xmlns:converters="clr-namespace:PreciseAlign.WPF.Converters" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:converters="clr-namespace:PreciseAlign.WPF.Converters" 
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:controls="clr-namespace:PreciseAlign.Controls;assembly=PreciseAlign.Controls"
         mc:Ignorable="d"
         Title="PreciseAlign Pro - COG对位系统" 
         Height="800" Width="1280"
@@ -203,52 +205,25 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="350"/>
             </Grid.ColumnDefinitions>
+
             <Grid Grid.Column="0" Margin="0,0,10,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Margin="0,0,5,0">
-                    <Grid>
-                        <Image Source="{Binding LeftDisplayImageSource}" Stretch="Uniform" />
-                        <TextBlock Text="Camera 1 (左Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
-                            <StackPanel.Resources>
-                                <Style TargetType="Button" BasedOn="{StaticResource IconButton}">
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Width" Value="28"/>
-                                    <Setter Property="Height" Value="28"/>
-                                    <Setter Property="Background" Value="#80000000"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                </Style>
-                            </StackPanel.Resources>
-                            <Button Content="🔍+" ToolTip="放大"/>
-                            <Button Content="1:1" ToolTip="1:1显示" Margin="5,0"/>
-                            <Button Content="🔒" ToolTip="锁定画面"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                <Border Grid.Column="1" Margin="5,0,0,0">
-                    <Grid>
-                        <Image Source="{Binding RightDisplayImageSource}" Stretch="Uniform" />
-                        <TextBlock Text="Camera 2 (右Mark)" Margin="10" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
-                            <StackPanel.Resources>
-                                <Style TargetType="Button" BasedOn="{StaticResource IconButton}">
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Width" Value="28"/>
-                                    <Setter Property="Height" Value="28"/>
-                                    <Setter Property="Background" Value="#80000000"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                </Style>
-                            </StackPanel.Resources>
-                            <Button Content="🔍+" ToolTip="放大"/>
-                            <Button Content="1:1" ToolTip="1:1显示" Margin="5,0"/>
-                            <Button Content="🔒" ToolTip="锁定画面"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+
+                <controls:HImageWindow Grid.Column="0"
+                               Image="{Binding LeftDisplayImage}"
+                               Graphics="{Binding LeftDisplayGraphics}" />
+
+                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
+
+                <controls:HImageWindow Grid.Column="2"
+                               Image="{Binding RightDisplayImage}"
+                               Graphics="{Binding RightDisplayGraphics}" />
             </Grid>
+
             <DockPanel Grid.Column="1">
                 <GroupBox Header="参数教导 (Teach)" DockPanel.Dock="Top">
                     <UniformGrid Columns="2" Rows="1">
@@ -258,36 +233,10 @@
                 </GroupBox>
                 <GroupBox Header="实时数据" DockPanel.Dock="Top" Margin="0,10,0,0">
                     <Grid Margin="5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="X:" FontWeight="Bold"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="123.456 mm" Margin="5,0"/>
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="ΔX:" FontWeight="Bold" Foreground="{DynamicResource StatusGreenBrush}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="+0.002 mm" Margin="5,0" Foreground="{DynamicResource StatusGreenBrush}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Y:" FontWeight="Bold"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="78.901 mm" Margin="5,0"/>
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="ΔY:" FontWeight="Bold" Foreground="{DynamicResource StatusRedBrush}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="3" Text="-0.001 mm" Margin="5,0" Foreground="{DynamicResource StatusRedBrush}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="θ:" FontWeight="Bold"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="0.000 deg" Margin="5,0"/>
-                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Δθ:" FontWeight="Bold"/>
-                        <TextBlock Grid.Row="2" Grid.Column="3" Text="+0.001 deg" Margin="5,0"/>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="运行日志" Margin="0,10,0,0">
                     <ListView Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ForegroundSubtleBrush}">
-                        <ListViewItem Content="12:06:50 [INFO] 设备初始化完成"/>
-                        <ListViewItem Content="12:06:48 [INFO] PLC连接成功"/>
-                        <ListViewItem Content="12:06:45 [ERROR] 相机2连接失败: Not found" Foreground="{DynamicResource StatusRedBrush}"/>
                     </ListView>
                 </GroupBox>
             </DockPanel>

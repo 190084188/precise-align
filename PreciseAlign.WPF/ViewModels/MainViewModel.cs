@@ -1,13 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HalconDotNet;
 using PreciseAlign.Core.Interfaces;
 using PreciseAlign.Core.Models;
 using PreciseAlign.WPF.Services.Camera;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Text.RegularExpressions;
 
 namespace PreciseAlign.WPF.ViewModels
 {
@@ -28,8 +29,15 @@ namespace PreciseAlign.WPF.ViewModels
         private bool _isAltairCameraPresent;
 
         // --- 两个显示区域的界面绑定属性 ---
-        [ObservableProperty] private ImageSource? _leftDisplayImageSource;
-        [ObservableProperty] private ImageSource? _rightDisplayImageSource;
+        [ObservableProperty] 
+        private HObject? _leftDisplayImage;
+        [ObservableProperty]
+        private HObject? _rightDisplayImage;
+        // 为叠加图形也创建绑定属性
+        [ObservableProperty]
+        private HObject? _leftDisplayGraphics;
+        [ObservableProperty] 
+        private HObject? _rightDisplayGraphics;
 
         private readonly Dictionary<string, string[]> _stepCameraMapping;
         private ICamera? _leftDisplayCamera;
@@ -65,7 +73,7 @@ namespace PreciseAlign.WPF.ViewModels
                     Debug.WriteLine($"Camera '{camera.CameraId}' failed to initialize: {ex.Message}");
                 }
             }
-            IsAltairCameraPresent = _allActiveCameras.Any(cam => cam is AltairCamera);
+            IsAltairCameraPresent = _allActiveCameras.Any(cam => cam.GetType().Name == "AltairCamera");
         }
 
         [RelayCommand]
@@ -80,8 +88,8 @@ namespace PreciseAlign.WPF.ViewModels
             if (_rightDisplayCamera != null) _rightDisplayCamera.ImageReady -= OnRightCameraImageReady;
 
             // 清空显示区域图像数据
-            LeftDisplayImageSource = null;
-            RightDisplayImageSource = null;
+            LeftDisplayImage = null; 
+            RightDisplayImage = null;
 
             // 从新的步骤中获取相机ID
             string[] cameraKeysForStep = _stepCameraMapping[stepName];
@@ -115,41 +123,72 @@ namespace PreciseAlign.WPF.ViewModels
         private void ShowGlobalControlPanel()
         {
             var anyCamera = _allActiveCameras.FirstOrDefault();
-            // 检查 firstCamera 的真实类型是否为 AltairCamera
-            if (anyCamera is AltairCamera altairCam)
-            {
-                // 如果是，就安全地调用其独有的 showControlPanel 方法
-                altairCam.ShowControlPanel();
-                Debug.WriteLine("viewmodel调用showControlPanel");
+            if (anyCamera == null) return;
 
-            }
-            else
+            // 使用反射来调用特定方法，避免强类型耦合
+            try
             {
-                Debug.WriteLine("当前相机不支持打开控制面板。");
+                // 查找名为 ShowControlPanel 的公共实例方法
+                var methodInfo = anyCamera.GetType().GetMethod("ShowControlPanel");
+                if (methodInfo != null)
+                {
+                    // 如果找到了，就调用它
+                    methodInfo.Invoke(anyCamera, null);
+                    Debug.WriteLine("ViewModel 调用 ShowControlPanel 成功。");
+                }
+                else
+                {
+                    Debug.WriteLine($"当前相机类型 '{anyCamera.GetType().Name}' 不支持打开控制面板。");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"调用 ShowControlPanel 失败: {ex.Message}");
             }
         }
 
         private void OnLeftCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
-            var bitmap = CreateBitmapSourceFromImageData(e.Image);
-            bitmap.Freeze();
-            System.Windows.Application.Current.Dispatcher.Invoke(() => LeftDisplayImageSource = bitmap);
+            var imageForDisplay = e.Image.Clone();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                // 释放上一张图像的内存
+                LeftDisplayImage?.Dispose();
+                LeftDisplayImage = imageForDisplay;
+            });
+
+            // 之后可以异步处理图像，而不阻塞UI
+            ProcessLeftImageAsync(e.Image);
         }
 
         private void OnRightCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
-            var bitmap = CreateBitmapSourceFromImageData(e.Image);
-            bitmap.Freeze();
-            System.Windows.Application.Current.Dispatcher.Invoke(() => RightDisplayImageSource = bitmap);
+            // 与左侧相机逻辑类似
+            var imageForDisplay = e.Image.Clone();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                RightDisplayImage?.Dispose();
+                RightDisplayImage = imageForDisplay;
+            });
+            // ProcessRightImageAsync(e.Image);
         }
-
-        private static BitmapSource CreateBitmapSourceFromImageData(ImageData imageData)
+        private async void ProcessLeftImageAsync(HImage image)
         {
-            var pf = imageData.PixelFormat == "BGR24" ? PixelFormats.Bgr24 : PixelFormats.Gray8;
-            int stride = (imageData.Width * pf.BitsPerPixel + 7) / 8;
-            return BitmapSource.Create(imageData.Width, imageData.Height, 96, 96, pf, null, imageData.PixelData, stride);
+            if (_visionProcessor == null)
+            {
+                image.Dispose(); // 如果不处理，也要释放
+                return;
+            }
+            var result = await _visionProcessor.ProcessImageAsync(image, CurrentStepName);
+            // result.ProcessedImage 和 result.ResultGraphics 已经被Clone并且原始image被释放
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                LeftDisplayImage?.Dispose();
+                LeftDisplayGraphics?.Dispose();
+                LeftDisplayImage = result.ProcessedImage;
+                LeftDisplayGraphics = result.ResultGraphics;
+            });
         }
-
 
         private void OnTimerTick(object? sender, EventArgs e)
         {

@@ -1,24 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HalconDotNet;
 
 namespace PreciseAlign.Core.Models
 {
     public class ImageReadyEventArgs : EventArgs
     {
         /// <summary>
-        /// 采集到的通用图像数据。
+        /// 采集到的 Halcon 图像对象
         /// </summary>
-        public ImageData Image { get; }
+        public HImage Image { get; } // 2. 将属性类型从 ImageData 修改为 HImage
 
         /// <summary>
-        /// 产生此图像的相机ID。
+        /// 触发该事件的相机ID
         /// </summary>
         public string CameraId { get; }
 
-        public ImageReadyEventArgs(ImageData image, string cameraId)
+        public ImageReadyEventArgs(HImage image, string cameraId) // 3. 修改构造函数参数
         {
             Image = image;
             CameraId = cameraId;

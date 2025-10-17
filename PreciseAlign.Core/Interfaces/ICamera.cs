@@ -13,17 +13,27 @@ namespace PreciseAlign.Core.Interfaces
         bool IsConnected { get; }
 
         /// <summary>
-        /// (建议新增) 获取或设置相机曝光时间 (单位: 微秒)
+        /// 获取或设置相机曝光时间 (单位: 微秒)
         /// </summary>
         double Exposure { get; set; }
 
         /// <summary>
-        /// (建议新增) 获取或设置相机增益
+        /// 获取或设置相机增益
         /// </summary>
         double Gain { get; set; }
 
         /// <summary>
-        /// 当新图像准备好时触发。事件参数现在是通用的 ImageData。
+        /// 设置相机画面水平翻转（左右）
+        /// </summary>
+        void HorzFlip(bool flipped);
+
+        /// <summary>
+        /// 设置相机画面竖直翻转（上下）
+        /// </summary>
+        void VertFlip(bool flipped);
+
+        /// <summary>
+        /// 当新图像准备好时触发。事件参数现在是通用的HImage。
         /// </summary>
         event EventHandler<ImageReadyEventArgs>? ImageReady;
 
@@ -32,7 +42,7 @@ namespace PreciseAlign.Core.Interfaces
         void SetTriggerMode(bool isTriggerMode);
 
         /// <summary>
-        /// 异步触发一次采图。实现者负责将SDK的图像格式转换为通用的 ImageData。
+        /// 异步触发一次采图。实现者负责将SDK的图像格式转换为通用的HImage。
         /// </summary>
         void GrabOneAsync();
     }

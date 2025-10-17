@@ -15,6 +15,12 @@ namespace PreciseAlign.WPF.Services.Camera
         public event EventHandler<ImageReadyEventArgs>? ImageReady;
 
         public SimulatedCamera(string cameraId) { CameraId = cameraId; }
+        public void HorzFlip(bool flipped)
+        {
+        }
+        public void VertFlip(bool flipped)
+        {
+        }
         public void Connect() { IsConnected = true; Console.WriteLine($"模拟相机 '{CameraId}' 已连接。"); }
         public void Disconnect() { IsConnected = false; }
         public void GrabOneAsync() { Console.WriteLine($"模拟相机 '{CameraId}' 触发了一次拍照。"); }

@@ -1,91 +1,95 @@
-﻿using PreciseAlign.Core.Interfaces;
+﻿using IniParser;
+using IniParser.Model;
+using PreciseAlign.Core.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace PreciseAlign.WPF.Services
 {
+    /// <summary>
+    /// 使用 ini-parser 库实现的现代化配置服务。
+    /// 此类同时实现了通用配置读取接口和特定于流程的配置接口。
+    /// </summary>
     public class ConfigService : IConfigService, IProcessConfigService
     {
-        private readonly string _path;
+        private readonly IniData _configData;
 
-        // 用于读取INI文件的Win32 API
-        [DllImport("kernel32", CharSet = CharSet.Unicode, EntryPoint = "GetPrivateProfileStringW")]
-        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode, EntryPoint = "GetPrivateProfileSectionW")]
-        private static extern int GetPrivateProfileSection(string section, byte[] retVal, int size, string filePath);
-
-        /// <summary>
-        /// 构造函数，初始化配置文件的路径。
-        /// 获取当前执行程序的目录，并组合成配置文件 "Config\Config.ini" 的完整路径。
-        /// 如果配置文件存在，则在调试输出中打印该路径。
-        /// </summary>
         public ConfigService()
         {
-            var exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            if (exePath == null)
+            var exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new InvalidOperationException("无法获取当前执行程序的目录。");
+
+            string configFilePath = Path.Combine(exePath, "Config", "Config.ini");
+
+            if (!File.Exists(configFilePath))
             {
-                throw new InvalidOperationException("无法获取当前执行程序的目录。");
+                throw new FileNotFoundException("配置文件未找到！", configFilePath);
             }
-            _path = Path.Combine(exePath, "Config","Config.ini");
-            
+
+            var parser = new FileIniDataParser();
+            _configData = parser.ReadFile(configFilePath);
+        }
+
+        #region IConfigService 实现
+
+        /// <summary>
+        /// 获取INI文件中指定节(Section)下的所有键值对。
+        /// </summary>
+        public Dictionary<string, string> GetSection(string section)
+        {
+            if (_configData.Sections.ContainsSection(section))
+            {
+                return _configData[section].ToDictionary(kvp => kvp.KeyName, kvp => kvp.Value);
+            }
+            // 如果节不存在，返回一个空字典，避免调用方出错
+            return new Dictionary<string, string>();
         }
 
         /// <summary>
-        /// 获取所有相机的配置信息。
-        /// 遍历假设最多5个相机（Cam0 到 Cam4），从配置文件的 "CameraType" 节点读取每个相机的类型。
-        /// 如果读取到的相机类型不为空，则将其添加到返回的字典中，键为 "Cam{i}"，值为对应的相机类型。
+        /// 获取INI文件中指定节和键的值。
         /// </summary>
-        /// <returns>包含相机编号与对应相机类型的字典</returns>
-        public Dictionary<string, string> GetCameraConfigurations()
+        public string GetValue(string section, string key)
         {
-            var configs = new Dictionary<string, string>();
-            for (int i = 0; i <= 4; i++) // 假设最多5个相机
-            {
-                var key = $"Cam{i}";
-                var retVal = new StringBuilder(255);
-                GetPrivateProfileString("CameraType", key, "", retVal, 255, _path);
-                string cameraType = retVal.ToString();
-                Debug.WriteLine($"正在读取配置: Section=CameraType, Key={key}, Value='{cameraType}', Path='{_path}'");
-                if (!string.IsNullOrEmpty(cameraType))
-                {
-                    configs[key] = cameraType;
-                }
-            }
-            return configs;
+            return _configData[section]?[key] ?? string.Empty;
         }
+
+        #endregion
+
+        #region IProcessConfigService 实现
 
         /// <summary>
         /// 获取流程步骤与相机ID的映射关系。
-        /// 从配置文件的 "ProcessSteps" 节点读取所有键值对，每个键为流程步骤名称，值为以逗号分隔的相机ID列表。
-        /// 将这些键值对解析后存入字典并返回，键为流程步骤名称，值为对应的相机ID字符串数组。
         /// </summary>
-        /// <returns>包含流程步骤名称与对应相机ID数组的字典</returns>
         public Dictionary<string, string[]> GetProcessStepCameraMapping()
         {
             var mapping = new Dictionary<string, string[]>();
-            byte[] buffer = new byte[2048];
-            GetPrivateProfileSection("ProcessSteps", buffer, buffer.Length, _path);
+            var sectionData = GetSection("ProcessSteps");
 
-            string allKeys = Encoding.Unicode.GetString(buffer).Trim('\0');
-            string[] keyValuePairs = allKeys.Split('\0');
-
-            foreach (var keyValuePair in keyValuePairs)
+            foreach (var kvp in sectionData)
             {
-                if (string.IsNullOrWhiteSpace(keyValuePair)) continue;
-                string[] parts = keyValuePair.Split('=');
-                if (parts.Length == 2)
+                string stepName = kvp.Key;
+                string cameraIdsValue = kvp.Value;
+
+                if (!string.IsNullOrWhiteSpace(cameraIdsValue))
                 {
-                    string stepName = parts[0];
-                    string[] cameraIds = parts[1].Split(',').Select(id => id.Trim()).ToArray();
+                    // 按逗号分割，并移除每个ID前后的空格
+                    string[] cameraIds = cameraIdsValue.Split(',')
+                                                       .Select(id => id.Trim())
+                                                       .ToArray();
                     mapping[stepName] = cameraIds;
                 }
             }
             return mapping;
         }
+
+        // 注意：旧的 GetCameraConfigurations 方法不再需要，
+        // 因为 CameraService 现在会使用更通用的 GetSection("Cameras")。
+        // 如果为了兼容旧的 IConfigService 接口定义而必须保留，可以这样实现：
+        // public Dictionary<string, string> GetCameraConfigurations() => GetSection("Cameras");
+
+        #endregion
     }
 }

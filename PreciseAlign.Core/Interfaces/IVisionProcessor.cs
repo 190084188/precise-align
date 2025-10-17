@@ -1,9 +1,6 @@
-﻿using PreciseAlign.Core.Models;
+﻿using HalconDotNet;
+using PreciseAlign.Core.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PreciseAlign.Core.Interfaces
 {
@@ -14,6 +11,6 @@ namespace PreciseAlign.Core.Interfaces
         /// </summary>
         /// <param name="image">待处理的图像。</param>
         /// <returns>视觉处理结果。</returns>
-        Task<VisionResult> ProcessImageAsync(ImageData image);
+        Task<VisionResult> ProcessImageAsync(HImage image, string stepName);
     }
 }

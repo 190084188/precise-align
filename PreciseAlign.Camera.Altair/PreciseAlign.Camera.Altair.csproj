@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net8.0-windows</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <UseWPF>true</UseWPF>
+	  <UseWindowsForms>true</UseWindowsForms>
+	  <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0-rc.2.25502.107" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PreciseAlign.Core\PreciseAlign.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AxAltairUDrv">
+      <HintPath>..\PreciseAlign.WPF\Assemblies\AltairDll\AxAltairUDrv.dll</HintPath>
+    </Reference>
+    <Reference Include="AxAltairUDrvAsm4.5">
+      <HintPath>..\PreciseAlign.WPF\Assemblies\AltairDll\AxAltairUDrvAsm4.5.dll</HintPath>
+    </Reference>
+    <Reference Include="AxOvkBase">
+      <HintPath>..\PreciseAlign.WPF\Assemblies\AltairDll\AxOvkBase.dll</HintPath>
+    </Reference>
+    <Reference Include="AxOvkBaseAsm4.5">
+      <HintPath>..\PreciseAlign.WPF\Assemblies\AltairDll\AxOvkBaseAsm4.5.dll</HintPath>
+    </Reference>
+    <Reference Include="halcondotnet">
+      <HintPath>..\..\..\Programs\MVTec\HALCON-24.11-Progress-Steady\bin\dotnet35\halcondotnet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="mkdir &quot;$(SolutionDir)PreciseAlign.WPF\bin\$(ConfigurationName)\$(TargetFramework)\Plugins\&quot;&#xD;&#xA;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)PreciseAlign.WPF\bin\$(ConfigurationName)\$(TargetFramework)\Plugins\&quot;" />
+  </Target>
+
+</Project>
