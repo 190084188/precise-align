@@ -1,12 +1,11 @@
 ﻿using AxAxAltairUDrv;
+using HalconDotNet;
 using PreciseAlign.Core.Interfaces;
 using PreciseAlign.Core.Models;
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
-using HalconDotNet;
 
 namespace PreciseAlign.Camera.Altair
 {

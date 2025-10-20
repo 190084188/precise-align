@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PreciseAlign.Core.Interfaces
+﻿namespace PreciseAlign.Core.Interfaces
 {
     /// <summary>
     /// 提供通用的配置读取功能。

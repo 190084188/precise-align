@@ -1,6 +1,5 @@
 ﻿using HalconDotNet;
 using PreciseAlign.Core.Models;
-using System;
 
 namespace PreciseAlign.Core.Interfaces
 {

@@ -1,11 +1,4 @@
-﻿using PreciseAlign.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PreciseAlign.WPF.Services
+﻿namespace PreciseAlign.WPF.Services
 {
     public class AlignmentWorkflow
     {

@@ -1,7 +1,6 @@
 ﻿using HalconDotNet;
 using PreciseAlign.Core.Interfaces;
 using PreciseAlign.Core.Models;
-using System.Threading.Tasks;
 
 namespace PreciseAlign.WPF.Services.Vision
 {

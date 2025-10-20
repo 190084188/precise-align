@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PreciseAlign.Core.Interfaces
+﻿namespace PreciseAlign.Core.Interfaces
 {
     /// <summary>
     /// 提供与具体工艺流程相关的配置信息。

@@ -1,7 +1,5 @@
 ﻿using PreciseAlign.Core.Interfaces;
 using PreciseAlign.Core.Models;
-using System;
-using System.Threading.Tasks;
 
 namespace PreciseAlign.WPF.Services.Camera
 {

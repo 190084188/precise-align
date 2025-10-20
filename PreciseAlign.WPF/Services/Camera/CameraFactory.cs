@@ -1,5 +1,4 @@
 ﻿using PreciseAlign.Core.Interfaces;
-using System;
 using System.IO;
 using System.Reflection;
 

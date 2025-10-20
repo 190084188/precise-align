@@ -2,11 +2,9 @@
 using PreciseAlign.Core.Interfaces;
 using PreciseAlign.WPF.Services;
 using PreciseAlign.WPF.Services.Camera; // 引入具体服务实现的命名空间
-using PreciseAlign.WPF.Services.Communication;
 using PreciseAlign.WPF.Services.Vision;
 using PreciseAlign.WPF.ViewModels; // 引入ViewModel的命名空间
 using PreciseAlign.WPF.Views;      // 引入View的命名空间
-using System;
 using System.Windows;
 
 namespace PreciseAlign.WPF
@@ -31,9 +29,12 @@ namespace PreciseAlign.WPF
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(provider => provider.GetRequiredService<ConfigService>());
             services.AddSingleton<IProcessConfigService>(provider => provider.GetRequiredService<ConfigService>());
+            // 注册日志服务
+            services.AddSingleton<ILoggerService, LoggerService>();
+            services.AddSingleton<IVisionProcessor, HalconVisionProcessor>();
 
             services.AddSingleton<CameraFactory>();
-
+            // 注册视觉处理器
             // 2. 注册 CameraService (单例)。
             //    DI容器会自动将上面注册的 IConfigService 和 CameraFactory 注入给它。
             services.AddSingleton<ICameraService, CameraService>();

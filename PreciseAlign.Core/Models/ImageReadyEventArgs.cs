@@ -1,5 +1,4 @@
-﻿using System;
-using HalconDotNet;
+﻿using HalconDotNet;
 
 namespace PreciseAlign.Core.Models
 {

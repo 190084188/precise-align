@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PreciseAlign.Core.Interfaces
+﻿namespace PreciseAlign.Core.Interfaces
 {
     public interface ICameraService
     {

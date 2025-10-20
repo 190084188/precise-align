@@ -12,8 +12,12 @@
         Title="PreciseAlign Pro - COG对位系统" 
         Height="800" Width="1280"
         WindowStartupLocation="CenterScreen"
-        MinWidth="1024" MinHeight="768">
+        MinWidth="1024" MinHeight="768"
+        Closed="MainWindow_Closed">
     <Window.Resources>
+        <!-- 新增的资源 -->
+        <SolidColorBrush x:Key="StatusOrangeBrush" Color="#FFA500" />
+
         <Style TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
@@ -145,6 +149,7 @@
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
 
+        <!-- Top Bar: Unchanged -->
         <Border Grid.Row="0" Background="{DynamicResource ContentBackgroundBrush}" CornerRadius="0" BorderThickness="0,0,0,1">
             <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
@@ -177,6 +182,7 @@
             </Grid>
         </Border>
 
+        <!-- Process Steps Bar: Unchanged -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
 
             <Button Content="(1) ACF对位" Style="{DynamicResource ProcessStepButton}"
@@ -200,47 +206,133 @@
 
         </StackPanel>
 
+        <!-- ======================= Main Content Area (Layout Rebuilt) ======================= -->
         <Grid Grid.Row="2" Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="350"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" />
+                <!-- 图像区域，占据大部分空间 -->
+                <RowDefinition Height="Auto" />
+                <!-- 分割线 -->
+                <RowDefinition Height="2*" />
+                <!-- 控制面板区域 -->
+            </Grid.RowDefinitions>
 
-            <Grid Grid.Column="0" Margin="0,0,10,0">
+            <!-- Top Area: Image Windows -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <controls:HImageWindow Grid.Column="0"
-                               Image="{Binding LeftDisplayImage}"
-                               Graphics="{Binding LeftDisplayGraphics}" />
+                <!-- Left Image Window with 4:3 Aspect Ratio -->
+                <Viewbox Grid.Column="0" Stretch="Uniform">
+                    <Grid Width="4" Height="3">
+                        <controls:HImageWindow Image="{Binding LeftDisplayImage}"
+                                               Graphics="{Binding LeftDisplayGraphics}" />
+                    </Grid>
+                </Viewbox>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
 
-                <controls:HImageWindow Grid.Column="2"
-                               Image="{Binding RightDisplayImage}"
-                               Graphics="{Binding RightDisplayGraphics}" />
+                <!-- Right Image Window with 4:3 Aspect Ratio -->
+                <Viewbox Grid.Column="2" Stretch="Uniform">
+                    <Grid Width="4" Height="3">
+                        <controls:HImageWindow Image="{Binding RightDisplayImage}"
+                                               Graphics="{Binding RightDisplayGraphics}" />
+                    </Grid>
+                </Viewbox>
             </Grid>
 
-            <DockPanel Grid.Column="1">
-                <GroupBox Header="参数教导 (Teach)" DockPanel.Dock="Top">
-                    <UniformGrid Columns="2" Rows="1">
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent"/>
+
+            <!-- Bottom Area: Control Panels -->
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Teach Panel -->
+                    <ColumnDefinition Width="*" />
+                    <!-- Data Panel -->
+                    <ColumnDefinition Width="2*" />
+                    <!-- Log Panel -->
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="参数教导 (Teach)" Grid.Column="0" MinWidth="150" Margin="0,0,5,0">
+                    <StackPanel>
                         <Button Content="教导参数 0 (相机1)" Style="{DynamicResource MainControlButton}" Margin="2"/>
                         <Button Content="教导参数 1 (相机2)" Style="{DynamicResource MainControlButton}" Margin="2"/>
-                    </UniformGrid>
+                    </StackPanel>
                 </GroupBox>
-                <GroupBox Header="实时数据" DockPanel.Dock="Top" Margin="0,10,0,0">
+
+                <GroupBox Header="实时数据" Grid.Column="1" Margin="5,0,5,0">
                     <Grid Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="X:" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="123.456 mm" Margin="5,0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="ΔX:" FontWeight="Bold" Foreground="{DynamicResource StatusGreenBrush}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="+0.002 mm" Margin="5,0" Foreground="{DynamicResource StatusGreenBrush}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Y:" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="78.901 mm" Margin="5,0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="ΔY:" FontWeight="Bold" Foreground="{DynamicResource StatusRedBrush}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="-0.001 mm" Margin="5,0" Foreground="{DynamicResource StatusRedBrush}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="θ:" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="0.000 deg" Margin="5,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Δθ:" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="+0.001 deg" Margin="5,0"/>
                     </Grid>
                 </GroupBox>
-                <GroupBox Header="运行日志" Margin="0,10,0,0">
-                    <ListView Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ForegroundSubtleBrush}">
+
+                <GroupBox Header="运行日志" Grid.Column="2" Margin="5,0,0,0">
+                    <ListView ItemsSource="{Binding LogMessages}" 
+                              Background="Transparent" 
+                              BorderThickness="0" 
+                              Foreground="{DynamicResource ForegroundSubtleBrush}"
+                              SelectionMode="Single">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Focusable" Value="False"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <ContentPresenter />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Level}" Value="ERROR">
+                                        <Setter Property="Foreground" Value="{DynamicResource StatusRedBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Level}" Value="WARN">
+                                        <Setter Property="Foreground" Value="{DynamicResource StatusOrangeBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock FontSize="12">
+                                    <Run Text="{Binding Timestamp}" FontWeight="Normal"/>
+                                    <Run Text="{Binding Level, StringFormat=' [{0}]'}" FontWeight="Bold"/>
+                                    <Run Text=":"/>
+                                    <Run Text="{Binding Message}"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
                     </ListView>
                 </GroupBox>
-            </DockPanel>
+            </Grid>
         </Grid>
+        <!-- ======================= Layout Rebuilt End ======================= -->
 
         <StatusBar Grid.Row="3" Background="{DynamicResource AccentBrush}">
             <StatusBarItem>
@@ -260,3 +352,4 @@
         </StatusBar>
     </Grid>
 </Window>
+
