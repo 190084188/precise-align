@@ -79,8 +79,6 @@ namespace PreciseAlign.Controls
                     HOperatorSet.SetPart(hWindow, 0, 0, height - 1, width - 1);
                 }
 
-                HOperatorSet.DispObj(Image, hWindow);
-
                 // a. 显示主图像
                 HOperatorSet.DispObj(Image, hWindow);
 

@@ -15,7 +15,6 @@
         MinWidth="1024" MinHeight="768"
         Closed="MainWindow_Closed">
     <Window.Resources>
-        <!-- 新增的资源 -->
         <SolidColorBrush x:Key="StatusOrangeBrush" Color="#FFA500" />
 
         <Style TargetType="TextBlock">

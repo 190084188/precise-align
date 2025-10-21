@@ -59,7 +59,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="halcondotnet">
-      <HintPath>..\..\..\Programs\MVTec\HALCON-24.11-Progress-Steady\bin\dotnet35\halcondotnet.dll</HintPath>
+      <HintPath>Assemblies\HalconDll\halcondotnet.dll</HintPath>
     </Reference>
   </ItemGroup>
 
