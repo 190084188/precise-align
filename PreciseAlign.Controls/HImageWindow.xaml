@@ -8,6 +8,28 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <hwpf:HSmartWindowControlWPF x:Name="HalconWindow" />
+        <DockPanel>
+            <ToolBarTray DockPanel.Dock="Top">
+                <ToolBar>
+                    <Button x:Name="BtnLoad" Content="加载" ToolTip="加载图像" Click="BtnLoad_Click" />
+                    <Button x:Name="BtnFit" Content="适应窗口" ToolTip="缩放至适应窗口" Click="BtnFit_Click" />
+                    <Button x:Name="BtnClear" Content="清空" ToolTip="清空窗口" Click="BtnClear_Click" />
+                    <Separator/>
+
+                    <ToggleButton x:Name="BtnPointer" Content="选择" ToolTip="选择/编辑" IsChecked="True" Click="Tool_Click"/>
+                    <ToggleButton x:Name="BtnMove" Content="移动" ToolTip="移动图像" Click="Tool_Click"/>
+                    <Separator/>
+
+                    <ToggleButton x:Name="BtnDrawRectangle1" Content="矩形" ToolTip="绘制矩形" Click="Tool_Click"/>
+                    <ToggleButton x:Name="BtnDrawRectangle2" Content="方向矩形" ToolTip="绘制带角度矩形" Click="Tool_Click"/>
+                    <ToggleButton x:Name="BtnDrawCircle" Content="圆形" ToolTip="绘制圆形" Click="Tool_Click"/>
+                </ToolBar>
+            </ToolBarTray>
+
+            <hwpf:HSmartWindowControlWPF x:Name="HalconWindow" 
+                             HMouseDown="HalconWindow_HMouseDown"
+                             HMouseMove="HalconWindow_HMouseMove"
+                             HMouseUp="HalconWindow_HMouseUp"/>
+        </DockPanel>
     </Grid>
 </UserControl>

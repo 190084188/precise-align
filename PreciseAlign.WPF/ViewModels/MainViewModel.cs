@@ -12,65 +12,63 @@ namespace PreciseAlign.WPF.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
+        // ... [服务和私有字段保持不变] ...
         private readonly ICameraService? _cameraService;
         private readonly IVisionProcessor? _visionProcessor;
         private readonly IProcessConfigService _processConfig;
         private readonly ILoggerService _logger;
-
         private readonly List<ICamera> _allActiveCameras = [];
         private readonly DispatcherTimer _timer;
         private readonly Dictionary<string, string[]> _stepCameraMapping;
-
-        // --- 为错误提示定义可配置的默认分辨率 ---
         private const int ErrorImageWidth = 640;
         private const int ErrorImageHeight = 480;
 
-        // --- 状态属性 ---
-        [ObservableProperty]// 右下角当前时间数据
+        [ObservableProperty]
         private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         [ObservableProperty]
         private string _currentStepName = "ACF_Alignment";
         [ObservableProperty]
         private bool _isAltairCameraPresent;
 
-        // --- 两个显示区域的界面绑定属性 ---
+        // --- 图像和图形的绑定属性 (已重构) ---
         [ObservableProperty]
         private HObject? _leftDisplayImage;
         [ObservableProperty]
         private HObject? _rightDisplayImage;
-        // 为叠加图形也创建绑定属性
+
+        // ★★★ 修改 #1: 重命名以明确用途 -> 用于用户交互的ROI ★★★
         [ObservableProperty]
-        private HObject? _leftDisplayGraphics;
+        private ObservableCollection<HDrawingObject> _leftDisplayInteractiveGraphics = new();
         [ObservableProperty]
-        private HObject? _rightDisplayGraphics;
+        private ObservableCollection<HDrawingObject> _rightDisplayInteractiveGraphics = new();
+
+        // ★★★ 新增 #2: 用于显示算法静态结果的属性 ★★★
+        [ObservableProperty]
+        private HObject? _leftDisplayResultGraphics;
+        [ObservableProperty]
+        private HObject? _rightDisplayResultGraphics;
 
         private ICamera? _leftDisplayCamera;
         private ICamera? _rightDisplayCamera;
 
         public ObservableCollection<LogEntry> LogMessages => _logger.Messages;
 
-        public MainViewModel
-                            (ICameraService? cameraService,
-                            IVisionProcessor? visionProcessor,
-                            IProcessConfigService? processConfig,
-                            ILoggerService? logger)
+        public MainViewModel(ICameraService? cameraService, IVisionProcessor? visionProcessor, IProcessConfigService? processConfig, ILoggerService? logger)
         {
+            // ... [构造函数内部逻辑保持不变] ...
             _cameraService = cameraService ?? throw new ArgumentNullException(nameof(cameraService));
             _visionProcessor = visionProcessor;
             _processConfig = processConfig ?? throw new ArgumentNullException(nameof(processConfig));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
             _stepCameraMapping = _processConfig.GetProcessStepCameraMapping();
-
             InitializeCameras();
             SelectProcessStep(CurrentStepName);
-
-            // 右下角当前时间数据定时刷新Timer
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += OnTimerTick;
             _timer.Start();
         }
 
+        // ... [InitializeCameras, SelectProcessStep, SubscribeToCamera, UnsubscribeCameraEvents, ShowGlobalControlPanel 保持不变] ...
         private void InitializeCameras()
         {
             _logger.LogInfo("开始初始化所有已配置的相机...");
@@ -89,7 +87,7 @@ namespace PreciseAlign.WPF.ViewModels
                     _logger.LogInfo($"相机 {camera.CameraId} 连接成功。");
 
                     _logger.LogInfo($"为相机 {camera.CameraId} 设置为连续采集模式...");
-                    camera.SetTriggerMode(false); // false = Live Mode
+                    camera.SetTriggerMode(false);
                     _logger.LogInfo($"相机 {camera.CameraId} 已启动连续采集。");
                     _allActiveCameras.Add(camera);
                 }
@@ -127,7 +125,6 @@ namespace PreciseAlign.WPF.ViewModels
             {
                 _logger.LogInfo($"左相机未分配");
             }
-
 
             if (cameraKeysForStep.Length > 1)
             {
@@ -176,15 +173,11 @@ namespace PreciseAlign.WPF.ViewModels
                 _logger.LogInfo("没有活动的相机可以打开控制面板。");
                 return;
             }
-
-            // 使用反射来调用特定方法，避免强类型耦合
             try
             {
-                // 查找名为 ShowControlPanel 的公共实例方法
                 var methodInfo = anyCamera.GetType().GetMethod("ShowControlPanel");
                 if (methodInfo != null)
                 {
-                    // 如果找到了，就调用它
                     methodInfo.Invoke(anyCamera, null);
                     Debug.WriteLine("ViewModel 调用 ShowControlPanel 成功。");
                 }
@@ -204,44 +197,56 @@ namespace PreciseAlign.WPF.ViewModels
             var imageForDisplay = e.Image.Clone();
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                // 释放上一张图像的内存
                 LeftDisplayImage?.Dispose();
                 LeftDisplayImage = imageForDisplay;
             });
-
-            // 之后可以异步处理图像，而不阻塞UI
             ProcessLeftImageAsync(e.Image);
         }
 
         private void OnRightCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
-            // 与左侧相机逻辑类似
             var imageForDisplay = e.Image.Clone();
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 RightDisplayImage?.Dispose();
                 RightDisplayImage = imageForDisplay;
             });
-            // ProcessRightImageAsync(e.Image);
+            // ProcessRightImageAsync(e.Image); // 保持注释，或创建对应方法
         }
+
+        // ★★★ 修改 #3: 完全重构此方法以使用新的属性和正确的清理逻辑 ★★★
         private async void ProcessLeftImageAsync(HImage image)
         {
             if (_visionProcessor == null)
             {
-                image.Dispose(); // 如果不处理，也要释放
+                image.Dispose();
                 return;
             }
             var result = await _visionProcessor.ProcessImageAsync(image, CurrentStepName);
-            // result.ProcessedImage 和 result.ResultGraphics 已经被Clone并且原始image被释放
+
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
+                // 1. 释放旧的图像和静态结果
                 LeftDisplayImage?.Dispose();
-                LeftDisplayGraphics?.Dispose();
+                LeftDisplayResultGraphics?.Dispose(); // 释放旧的 HObject 结果
+
+                // 2. 赋新值
                 LeftDisplayImage = result.ProcessedImage;
-                LeftDisplayGraphics = result.ResultGraphics;
+                LeftDisplayResultGraphics = result.ResultGraphics; // 赋值给新的 HObject 属性
+
+                // 3. (可选) 如果需要，清空之前的交互ROI
+                if (LeftDisplayInteractiveGraphics != null)
+                {
+                    foreach (var graphic in LeftDisplayInteractiveGraphics)
+                    {
+                        graphic.Dispose();
+                    }
+                    LeftDisplayInteractiveGraphics.Clear();
+                }
             });
         }
 
+        // ... [OnTimerTick, StartAlignment, Dispose 保持不变] ...
         private void OnTimerTick(object? sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -250,16 +255,10 @@ namespace PreciseAlign.WPF.ViewModels
         [RelayCommand]
         private async Task StartAlignment()
         {
-            // 这里是核心工作流的入口
-            // 1. 触发相机
-            // 2. 处理图像
-            // 3. 计算坐标
-            // 4. 发送给PLC
         }
 
         public void Dispose()
         {
-            //清理刷新时间的Timer
             if (_timer != null)
             {
                 _timer.Stop();

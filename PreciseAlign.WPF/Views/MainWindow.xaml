@@ -223,24 +223,17 @@
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- Left Image Window with 4:3 Aspect Ratio -->
-                <Viewbox Grid.Column="0" Stretch="Uniform">
-                    <Grid Width="4" Height="3">
-                        <controls:HImageWindow Image="{Binding LeftDisplayImage}"
-                                               Graphics="{Binding LeftDisplayGraphics}" />
-                    </Grid>
-                </Viewbox>
-
+                
+                <controls:HImageWindow Grid.Column="0"
+                                       Image="{Binding LeftDisplayImage}"
+                                       Graphics="{Binding LeftDisplayInteractiveGraphics}" 
+                                       ResultGraphics="{Binding LeftDisplayResultGraphics}" />
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
 
-                <!-- Right Image Window with 4:3 Aspect Ratio -->
-                <Viewbox Grid.Column="2" Stretch="Uniform">
-                    <Grid Width="4" Height="3">
-                        <controls:HImageWindow Image="{Binding RightDisplayImage}"
-                                               Graphics="{Binding RightDisplayGraphics}" />
-                    </Grid>
-                </Viewbox>
+                <controls:HImageWindow Grid.Column="2"
+                                       Image="{Binding RightDisplayImage}"
+                                       Graphics="{Binding RightDisplayInteractiveGraphics}" 
+                                       ResultGraphics="{Binding RightDisplayResultGraphics}" />
             </Grid>
 
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent"/>
