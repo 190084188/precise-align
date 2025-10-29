@@ -10,9 +10,14 @@ using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.ViewModels
 {
+    public interface IMainWindowView
+    {
+        void UpdateLeftDisplay(HObject image, HObject? results = null);
+        void UpdateRightDisplay(HObject image, HObject? results = null);
+    }
     public partial class MainViewModel : ObservableObject
     {
-        // ... [服务和私有字段保持不变] ...
+        public IMainWindowView? View { get; set; }
         private readonly ICameraService? _cameraService;
         private readonly IVisionProcessor? _visionProcessor;
         private readonly IProcessConfigService _processConfig;
@@ -36,13 +41,13 @@ namespace PreciseAlign.WPF.ViewModels
         [ObservableProperty]
         private HObject? _rightDisplayImage;
 
-        // ★★★ 修改 #1: 重命名以明确用途 -> 用于用户交互的ROI ★★★
+        // 用于用户交互的ROI
         [ObservableProperty]
         private ObservableCollection<HDrawingObject> _leftDisplayInteractiveGraphics = new();
         [ObservableProperty]
         private ObservableCollection<HDrawingObject> _rightDisplayInteractiveGraphics = new();
 
-        // ★★★ 新增 #2: 用于显示算法静态结果的属性 ★★★
+        // 用于显示算法静态结果的属性
         [ObservableProperty]
         private HObject? _leftDisplayResultGraphics;
         [ObservableProperty]
@@ -55,7 +60,6 @@ namespace PreciseAlign.WPF.ViewModels
 
         public MainViewModel(ICameraService? cameraService, IVisionProcessor? visionProcessor, IProcessConfigService? processConfig, ILoggerService? logger)
         {
-            // ... [构造函数内部逻辑保持不变] ...
             _cameraService = cameraService ?? throw new ArgumentNullException(nameof(cameraService));
             _visionProcessor = visionProcessor;
             _processConfig = processConfig ?? throw new ArgumentNullException(nameof(processConfig));
@@ -68,7 +72,6 @@ namespace PreciseAlign.WPF.ViewModels
             _timer.Start();
         }
 
-        // ... [InitializeCameras, SelectProcessStep, SubscribeToCamera, UnsubscribeCameraEvents, ShowGlobalControlPanel 保持不变] ...
         private void InitializeCameras()
         {
             _logger.LogInfo("开始初始化所有已配置的相机...");
@@ -195,26 +198,17 @@ namespace PreciseAlign.WPF.ViewModels
         private void OnLeftCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
             var imageForDisplay = e.Image.Clone();
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                LeftDisplayImage?.Dispose();
-                LeftDisplayImage = imageForDisplay;
-            });
+            View?.UpdateLeftDisplay(imageForDisplay);
             ProcessLeftImageAsync(e.Image);
         }
 
         private void OnRightCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
             var imageForDisplay = e.Image.Clone();
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                RightDisplayImage?.Dispose();
-                RightDisplayImage = imageForDisplay;
-            });
-            // ProcessRightImageAsync(e.Image); // 保持注释，或创建对应方法
+            View?.UpdateRightDisplay(imageForDisplay);
+            ProcessRightImageAsync(e.Image); // 保持注释，或创建对应方法
         }
 
-        // ★★★ 修改 #3: 完全重构此方法以使用新的属性和正确的清理逻辑 ★★★
         private async void ProcessLeftImageAsync(HImage image)
         {
             if (_visionProcessor == null)
@@ -222,6 +216,7 @@ namespace PreciseAlign.WPF.ViewModels
                 image.Dispose();
                 return;
             }
+
             var result = await _visionProcessor.ProcessImageAsync(image, CurrentStepName);
 
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -230,23 +225,30 @@ namespace PreciseAlign.WPF.ViewModels
                 LeftDisplayImage?.Dispose();
                 LeftDisplayResultGraphics?.Dispose(); // 释放旧的 HObject 结果
 
-                // 2. 赋新值
-                LeftDisplayImage = result.ProcessedImage;
-                LeftDisplayResultGraphics = result.ResultGraphics; // 赋值给新的 HObject 属性
-
-                // 3. (可选) 如果需要，清空之前的交互ROI
-                if (LeftDisplayInteractiveGraphics != null)
-                {
-                    foreach (var graphic in LeftDisplayInteractiveGraphics)
-                    {
-                        graphic.Dispose();
-                    }
-                    LeftDisplayInteractiveGraphics.Clear();
-                }
+                // 2. 赋新值给绑定属性。这将触发HImageWindow的FullRedraw()
+                // 从而确保在一个干净的画布上显示最终结果。
+                LeftDisplayImage = result.ProcessedImage;       // 这是处理过的图像
+                LeftDisplayResultGraphics = result.ResultGraphics; // 这是识别到的特征等结果
             });
         }
 
-        // ... [OnTimerTick, StartAlignment, Dispose 保持不变] ...
+        private async void ProcessRightImageAsync(HImage image)
+        {
+            if (_visionProcessor == null)
+            {
+                image.Dispose();
+                return;
+            }
+            var result = await _visionProcessor.ProcessImageAsync(image, CurrentStepName);
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                RightDisplayImage?.Dispose();
+                RightDisplayResultGraphics?.Dispose();
+                RightDisplayImage = result.ProcessedImage;
+                RightDisplayResultGraphics = result.ResultGraphics;
+            });
+        }
+
         private void OnTimerTick(object? sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
