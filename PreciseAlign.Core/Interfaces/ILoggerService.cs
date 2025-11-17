@@ -26,5 +26,6 @@ namespace PreciseAlign.Core.Interfaces
         /// 记录错误信息，并包含异常详情
         /// </summary>
         void LogError(string message, Exception ex);
+        void LogWarning(string v);
     }
 }

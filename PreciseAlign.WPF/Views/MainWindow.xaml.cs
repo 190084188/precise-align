@@ -18,13 +18,13 @@ namespace PreciseAlign.WPF.Views
         public void UpdateLeftDisplay(HObject image, HObject? results = null)
         {
             // 直接调用 HImageWindow 控件的高性能方法
-            LeftImageWindow.UpdateImage(image, results);
+            LeftImageWindow.Image = image;
         }
 
         public void UpdateRightDisplay(HObject image, HObject? results = null)
         {
             // 直接调用 HImageWindow 控件的高性能方法
-            RightImageWindow.UpdateImage(image, results);
+            RightImageWindow.Image = image;
         }
         private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
         {

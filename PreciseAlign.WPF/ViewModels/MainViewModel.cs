@@ -77,7 +77,7 @@ namespace PreciseAlign.WPF.ViewModels
             _logger.LogInfo("开始初始化所有已配置的相机...");
             if (!_cameraService.AllCameras.Any())
             {
-                _logger.LogInfo("配置文件中未找到任何相机。");
+                _logger.LogError("配置文件中未找到任何相机。");
                 return;
             }
 

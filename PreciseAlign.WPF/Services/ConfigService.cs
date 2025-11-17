@@ -1,8 +1,10 @@
 ﻿using IniParser;
 using IniParser.Model;
 using PreciseAlign.Core.Interfaces;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace PreciseAlign.WPF.Services
 {
@@ -27,7 +29,7 @@ namespace PreciseAlign.WPF.Services
             }
 
             var parser = new FileIniDataParser();
-            _configData = parser.ReadFile(configFilePath);
+            _configData = parser.ReadFile(configFilePath, Encoding.UTF8);
         }
 
         #region IConfigService 实现
@@ -85,7 +87,7 @@ namespace PreciseAlign.WPF.Services
         // 注意：旧的 GetCameraConfigurations 方法不再需要，
         // 因为 CameraService 现在会使用更通用的 GetSection("Cameras")。
         // 如果为了兼容旧的 IConfigService 接口定义而必须保留，可以这样实现：
-        // public Dictionary<string, string> GetCameraConfigurations() => GetSection("Cameras");
+        public Dictionary<string, string> GetCameraConfigurations() => GetSection("Cameras");
 
         #endregion
     }

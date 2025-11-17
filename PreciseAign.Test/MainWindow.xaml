@@ -23,7 +23,7 @@
         </StackPanel>
 
         <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="5">
-            <ctrl:HImageWindow 
+            <ctrl:HImageWindow x:Name="hwindow"
                 Image="{Binding Image}" 
                 Graphics="{Binding Graphics}" />
         </Border>

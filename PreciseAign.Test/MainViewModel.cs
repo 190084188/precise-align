@@ -8,7 +8,7 @@ namespace PreciseAlign.Test.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private HObject _image;
-        private HObject _graphics;
+        private HDrawingObject _graphics;
 
         // 绑定到 HImageWindow.Image 的属性
         public HObject Image
@@ -18,7 +18,7 @@ namespace PreciseAlign.Test.ViewModels
         }
 
         // 绑定到 HImageWindow.Graphics 的属性
-        public HObject Graphics
+        public HDrawingObject Graphics
         {
             get { return _graphics; }
             set { _graphics = value; OnPropertyChanged(); }
@@ -43,8 +43,7 @@ namespace PreciseAlign.Test.ViewModels
         private void GenerateRoi()
         {
             // 生成一个矩形作为ROI
-            HOperatorSet.GenRectangle1(out HObject rect, 100, 100, 300, 400);
-            Graphics = rect;
+            Graphics =  HDrawingObject.CreateDrawingObject(HDrawingObject.HDrawingObjectType.RECTANGLE1, 100, 100, 300, 400);
         }
 
         private void LoadImage1()

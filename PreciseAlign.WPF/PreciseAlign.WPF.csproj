@@ -8,15 +8,8 @@
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Assets\Images\boe_logo.ico</ApplicationIcon>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="新文件夹\**" />
-    <EmbeddedResource Remove="新文件夹\**" />
-    <None Remove="新文件夹\**" />
-    <Page Remove="新文件夹\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\Images\boe_logo.ico" />
@@ -26,10 +19,10 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="ini-parser" Version="2.5.2" />
     <PackageReference Include="log4net" Version="3.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
     <PackageReference Include="NModbus" Version="3.0.81" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,11 +65,23 @@
     </None>
   </ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <ItemGroup>
+    <Folder Include="Plugins\" />
+  </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<!-- 确保目标目录存在，如果不存在则创建 -->
 		<MakeDir Directories="$(TargetDir)Config" Condition="!Exists('$(TargetDir)Config')" />
 		<!-- 执行 xcopy 命令 -->
 		<Exec Command="xcopy /s /e /y &quot;$(ProjectDir)Config&quot; &quot;$(TargetDir)Config&quot;" />
+	</Target>
+	
+	<Target Name="CopyAssembliesFlat" BeforeTargets="AfterBuild">
+		<!-- 复制Assemblies文件夹下的各个依赖库到根目录 -->
+		<ItemGroup>
+			<AssembliesFiles Include="$(ProjectDir)Assemblies\**\*.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(AssembliesFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

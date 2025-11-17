@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
 	<EnableWindowsTargeting>true</EnableWindowsTargeting>
+	<Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

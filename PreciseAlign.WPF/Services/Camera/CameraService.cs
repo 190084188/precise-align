@@ -1,4 +1,5 @@
 ﻿using PreciseAlign.Core.Interfaces;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace PreciseAlign.WPF.Services.Camera
@@ -6,19 +7,21 @@ namespace PreciseAlign.WPF.Services.Camera
     public class CameraService : ICameraService
     {
         private readonly Dictionary<string, ICamera> _cameras;
-
+        private readonly ILoggerService _logger;
         // 构造函数注入 IConfigService 和 CameraFactory
-        public CameraService(IConfigService configService, CameraFactory cameraFactory)
+        public CameraService(ILoggerService logger, IConfigService configService, CameraFactory cameraFactory)
         {
+            _logger = logger;
             _cameras = new Dictionary<string, ICamera>();
             InitializeCameras(configService, cameraFactory);
+
         }
 
         private void InitializeCameras(IConfigService configService, CameraFactory cameraFactory)
         {
             // 1. 获取 [Cameras] 节中定义的所有要创建的相机实例
             var camerasToCreate = configService.GetSection("Cameras");
-
+            _logger.LogDebug("加载Config.ini中Cameras节中要创建的相机实例中...");
             foreach (var camEntry in camerasToCreate)
             {
                 try
@@ -34,20 +37,21 @@ namespace PreciseAlign.WPF.Services.Camera
 
                     if (string.IsNullOrEmpty(typeName) || string.IsNullOrEmpty(createMethod))
                     {
-                        Console.WriteLine($"[警告] 相机插件 '{pluginKey}' 的配置不完整，已跳过。");
+                        _logger.LogWarning($"相机'{pluginKey}'的配置不完整(类型不完整或缺少创建方法)，已跳过。");
                         continue;
                     }
 
                     // 3. 调用工厂，使用反射创建相机实例
                     ICamera camera = cameraFactory.CreateCamera(assemblyPath, typeName, createMethod, deviceIndex);
                     _cameras.Add(deviceIndex, camera);
-
-                    Console.WriteLine($"[成功] 相机 '{deviceIndex}' (类型: {typeName}) 已成功创建。");
+                    // 4. 打印日志
+                    _logger.LogDebug($"相机{deviceIndex}: '{pluginKey}'已成功创建。");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[错误] 初始化相机 '{camEntry.Key}' 失败: {ex.Message}");
-                    // 在实际应用中，这里应该使用日志记录，并可能弹出错误提示
+                    _logger.LogError($"创建相机{camEntry.Key}: '{camEntry.Value}'失败，失败原因: {ex.Message}", ex);
+                    // 添加下面这行代码，让程序崩溃并显示完整的异常信息
+                    throw new Exception($"创建相机{camEntry.Key}: '{camEntry.Value}'失败，失败原因: {ex.Message}", ex);
                 }
             }
         }
