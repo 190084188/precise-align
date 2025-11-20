@@ -26,20 +26,20 @@
                     <Separator/>
 
                     <RadioButton x:Name="BtnSelectionMode" Content="框选" ToolTip="进入对象选择模式" 
-                                 GroupName="{Binding UniqueGroupName}" IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.Selection}}"/>
+                                 IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.Selection}}"/>
 
                     <RadioButton x:Name="BtnMovingMode" Content="移动" ToolTip="进入图像移动模式" 
-                                 GroupName="{Binding UniqueGroupName}" IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.Moving}}"/>
+                                 IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.Moving}}"/>
 
                     <Separator/>
                     <RadioButton x:Name="BtnDrawRectangle1" Content="矩形" ToolTip="绘制矩形" 
-                                 GroupName="{Binding UniqueGroupName}" IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawRectangle1}}"/>
+                                 IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawRectangle1}}"/>
 
                     <RadioButton x:Name="BtnDrawRectangle2" Content="方向矩形" ToolTip="绘制带角度矩形" 
-                                 GroupName="{Binding UniqueGroupName}" IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawRectangle2}}"/>
+                                 IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawRectangle2}}"/>
 
                     <RadioButton x:Name="BtnDrawCircle" Content="圆形" ToolTip="绘制圆形" 
-                                 GroupName="{Binding UniqueGroupName}" IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawCircle}}"/>
+                                 IsChecked="{Binding ViewModel.ActiveTool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:ActiveToolMode.DrawCircle}}"/>
 
                 </ToolBar>
             </ToolBarTray>

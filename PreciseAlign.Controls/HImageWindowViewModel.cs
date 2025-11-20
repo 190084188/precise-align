@@ -1,15 +1,12 @@
-﻿// HImageWindowViewModel.cs (已完全修复)
+﻿// HImageWindowViewModel.cs
 
 using HalconDotNet;
 using Microsoft.Win32;
 using PreciseAlign.Controls.Mvvm;
-using PreciseAlign.Controls.Models;
-using System;
+using PreciseAlign.Core.Models;
+using PreciseAlign.Core.Mvvm;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 
@@ -25,20 +22,87 @@ namespace PreciseAlign.Controls
         DrawCircle
     }
 
-    public class HImageWindowViewModel : INotifyPropertyChanged
+    public class HImageWindowViewModel : ObservableObject
     {
+        #region 事件声明 (View 订阅这些事件以更新 UI)
+
+        /// <summary>
+        /// 请求 View 执行重绘 (通常对应 RedrawSynchronous)
+        /// </summary>
+        public event Action? RequestRepaint;
+
+        /// <summary>
+        /// 请求 View 执行图像适应窗口 (SetPartToFitImage)
+        /// </summary>
+        public event Action? RequestAutoFit;
+
+        #endregion
+
         #region 属性设置
         private const string SELECTED_COLOR = "cyan";
         private const string DESELECTED_COLOR = "red";
+        // --- 核心数据属性 ---
+        private HObject? _image;
+        /// <summary>
+        /// 当前显示的图像
+        /// </summary>
+        public HObject? Image
+        {
+            get => _image;
+            set
+            {
+                // 注意：这里暂不Dispose旧图像，因为可能由外部DP管理生命周期。
+                // 如果确定完全由VM管理，应在此处 Dispose _image
+                if (SetProperty(ref _image, value))
+                {
+                    // 图像变更自动触发重绘和适应窗口
+                    RequestAutoFit?.Invoke();
+                    RequestRepaint?.Invoke();
+                }
+            }
+        }
+        // 图形集合 (直接在 VM 中管理)
+        private ObservableCollection<ROI> _graphics = new ObservableCollection<ROI>();
+        public ObservableCollection<ROI> Graphics
+        {
+            get => _graphics;
+            set
+            {
+                if (_graphics != value)
+                {
+                    // 1. 取消订阅旧集合的事件
+                    if (_graphics != null)
+                    {
+                        _graphics.CollectionChanged -= OnGraphicsCollectionChanged;
+                        foreach (var roi in _graphics)
+                        {
+                            roi.Shapes.CollectionChanged -= OnShapesCollectionChanged;
+                        }
+                    }
 
-        private readonly HImageWindow _view;
+                    _graphics = value ?? new ObservableCollection<ROI>();
+
+                    // 2. 订阅新集合的事件
+                    if (_graphics != null)
+                    {
+                        _graphics.CollectionChanged += OnGraphicsCollectionChanged;
+                        foreach (var roi in _graphics)
+                        {
+                            roi.Shapes.CollectionChanged += OnShapesCollectionChanged;
+                        }
+                    }
+
+                    OnPropertyChanged();
+                    RequestRepaint?.Invoke();
+                }
+            }
+        }
+        // 交互状态
         private double _mouseStartRow, _mouseStartCol;
 
-        // --- 唯一的交互状态 ---
-        private enum InteractionState { None, CreatingShape, DraggingHandle, DraggingBody, AreaSelecting }
+        private enum InteractionState { None, CreatingShape, DraggingHandle, DraggingBody, AreaSelecting }
         private InteractionState _currentState = InteractionState.None;
 
-        // --- 交互期间的活动对象 ---
         private IShape? _activeShape;
         private HitTestHandle _activeHandle;
 
@@ -48,14 +112,22 @@ namespace PreciseAlign.Controls
             get => _activeTool;
             set
             {
-                if (_activeTool != value)
+                if (SetProperty(ref _activeTool, value))
                 {
-                    _activeTool = value;
-                    OnPropertyChanged();
-                    UpdateOperationMode();
+                    // 切换工具时重置状态
+                    _currentState = InteractionState.None;
+                    _activeShape = null;
                 }
             }
         }
+
+        public HWindow? AreaSelectionWindow { get; set; }
+
+        private readonly ObservableCollection<IShape> _selectedObjects = [];
+
+        private long _lastRenderTime = 0;
+        private const int MIN_RENDER_INTERVAL = 15;
+
         #endregion
 
         #region 命令
@@ -65,14 +137,12 @@ namespace PreciseAlign.Controls
         public ICommand DeleteSelectedCommand { get; }
         #endregion
 
-        private readonly ObservableCollection<IShape> _selectedObjects = [];
 
-        public HImageWindowViewModel(HImageWindow view)
+
+        public HImageWindowViewModel()
         {
-            _view = view;
-
             LoadImageCommand = new RelayCommand(LoadImage);
-            FitImageCommand = new RelayCommand(_view.SetPartToFitImage);
+            FitImageCommand = new RelayCommand(() => RequestAutoFit?.Invoke());
             ClearGraphicsCommand = new RelayCommand(ClearGraphics);
             DeleteSelectedCommand = new RelayCommand(DeleteSelected, () => _selectedObjects.Any());
 
@@ -83,20 +153,37 @@ namespace PreciseAlign.Controls
             };
 
             ActiveTool = ActiveToolMode.Selection;
+
+            // Graphics 集合变更监听
+            Graphics.CollectionChanged += (s, e) => RequestRepaint?.Invoke();
         }
 
-        private void UpdateOperationMode()
+        // 监听 ROI 列表的变化 (例如：添加/删除了一个 ROI 分组)
+        private void OnGraphicsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (ActiveTool == ActiveToolMode.Moving)
+            // 当有新 ROI 被添加时，我们要监听这个 ROI 内部 Shapes 的变化
+            if (e.NewItems != null)
             {
-                _view.HalconWindow.HMoveContent = true;
+                foreach (ROI newItem in e.NewItems)
+                {
+                    newItem.Shapes.CollectionChanged += OnShapesCollectionChanged;
+                }
             }
-            else
+            // 当 ROI 被移除时，取消监听
+            if (e.OldItems != null)
             {
-                _view.HalconWindow.HMoveContent = false;
+                foreach (ROI oldItem in e.OldItems)
+                {
+                    oldItem.Shapes.CollectionChanged -= OnShapesCollectionChanged;
+                }
             }
+            RequestRepaint?.Invoke();
         }
-
+        // 监听具体 Shape 的变化 (例如：ROI 里的矩形被删除了)
+        private void OnShapesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            RequestRepaint?.Invoke();
+        }
         #region 命令实现
         private void LoadImage()
         {
@@ -110,7 +197,7 @@ namespace PreciseAlign.Controls
                 try
                 {
                     HOperatorSet.ReadImage(out HObject ho_Image, ofd.FileName);
-                    _view.Image = ho_Image;
+                    Image = ho_Image;
                 }
                 catch (Exception ex)
                 {
@@ -121,25 +208,26 @@ namespace PreciseAlign.Controls
 
         private void ClearGraphics()
         {
-            if (_view.Graphics != null)
-            {
-                _view.Graphics.Clear();
-            }
+            Graphics.Clear();
             _selectedObjects.Clear();
+            RequestRepaint?.Invoke();
         }
 
         private void DeleteSelected()
         {
-            if (_view.Graphics == null) return;
-            foreach (var roi in _view.Graphics)
+            if (Graphics == null) return;
+            bool changed = false;
+            foreach (var roi in Graphics)
             {
                 var shapesToRemove = roi.Shapes.Where(s => _selectedObjects.Contains(s)).ToList();
                 foreach (var shape in shapesToRemove)
                 {
                     roi.Shapes.Remove(shape);
+                    changed = true;
                 }
             }
             _selectedObjects.Clear();
+            if (changed) RequestRepaint?.Invoke();
         }
         #endregion
 
@@ -147,7 +235,6 @@ namespace PreciseAlign.Controls
 
         public void HandleMouseDown(HSmartWindowControlWPF.HMouseEventArgsWPF e)
         {
-            _view.Focus();
             _mouseStartRow = e.Row;
             _mouseStartCol = e.Column;
             _currentState = InteractionState.None; // 重置状态
@@ -207,8 +294,8 @@ namespace PreciseAlign.Controls
                         case ActiveToolMode.DrawRectangle1:
                             _activeShape = new ShapeRectangle1(e.Row, e.Column, e.Row, e.Column);
                             break;
-                        case ActiveToolMode.DrawRectangle2: 
-                            _activeShape = new ShapeRectangle2(e.Row, e.Column, 0, 0, 0);
+                        case ActiveToolMode.DrawRectangle2:
+                            _activeShape = new ShapeRectangle2(e.Row, e.Column, 0, 0, 0);
                             break;
                         case ActiveToolMode.DrawCircle:
                             _activeShape = new ShapeCircle(e.Row, e.Column, 0);
@@ -218,11 +305,13 @@ namespace PreciseAlign.Controls
                             return;
                     }
                     _activeShape.Color = SELECTED_COLOR;
-                    var defaultRoi = _view.Graphics.FirstOrDefault(r => r.Name == "Default");
+                    var defaultRoi = Graphics.FirstOrDefault(r => r.Name == "Default");
                     if (defaultRoi == null)
                     {
                         defaultRoi = new ROI { Name = "Default" };
-                        _view.Graphics.Add(defaultRoi);
+                        Graphics.Add(defaultRoi);
+                        // Graphics CollectionChanged 会触发重绘，但这里也可以显式调用以确保响应
+                        // RequestRepaint?.Invoke();
                     }
                     defaultRoi.Shapes.Add(_activeShape);
                 }
@@ -233,10 +322,17 @@ namespace PreciseAlign.Controls
                 }
             }
         }
-
         public void HandleMouseMove(HSmartWindowControlWPF.HMouseEventArgsWPF e)
         {
-            System.Threading.Thread.Sleep(5);
+            // TODO: 更新鼠标坐标显示
+            long currentTime = Stopwatch.GetTimestamp();
+            // 将 Timestamp 转换为毫秒 (TimeSpan.TicksPerMillisecond 在某些高频计时器下不适用，这是通用写法)
+            long elapsedMs = (currentTime - _lastRenderTime) * 1000 / Stopwatch.Frequency;
+            if (elapsedMs < MIN_RENDER_INTERVAL)
+            {
+                return; // 还没到刷新时间，跳过重绘请求
+            }
+            _lastRenderTime = currentTime;
             switch (_currentState)
             {
                 case InteractionState.DraggingBody:
@@ -245,12 +341,12 @@ namespace PreciseAlign.Controls
                     _activeShape?.Move(rowOffset, colOffset);
                     _mouseStartRow = e.Row;
                     _mouseStartCol = e.Column;
-                    _view.RedrawSynchronous();
+                    RequestRepaint?.Invoke();
                     break;
 
                 case InteractionState.DraggingHandle:
                     _activeShape?.DragHandle(_activeHandle, e.Row, e.Column);
-                    _view.RedrawSynchronous();
+                    RequestRepaint?.Invoke();
                     break;
                 case InteractionState.CreatingShape:
                     try
@@ -260,7 +356,7 @@ namespace PreciseAlign.Controls
                             rect.Row2 = e.Row;
                             rect.Column2 = e.Column;
                         }
-                        else if (_activeShape is ShapeRectangle2 rect2) 
+                        else if (_activeShape is ShapeRectangle2 rect2)
                         {
                             rect2.Phi = HMisc.AngleLx(rect2.Row, rect2.Column, e.Row, e.Column);
                             rect2.Length1 = HMisc.DistancePp(rect2.Row, rect2.Column, e.Row, e.Column);
@@ -270,22 +366,31 @@ namespace PreciseAlign.Controls
                         {
                             circ.Radius = HMisc.DistancePp(circ.Row, circ.Column, e.Row, e.Column);
                         }
-                        _view.RedrawSynchronous();
+                        RequestRepaint?.Invoke();
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"更新 Shape 失败: {ex.Message}");
                     }
                     break;
-
                 case InteractionState.AreaSelecting:
-                    // --- 绘制选择框 (不变) ---
-                    var hWindow = _view.HalconWindow.HalconWindow;
-                    _view.RedrawSynchronous();
-                    hWindow.SetColor("green");
-                    hWindow.SetDraw("margin");
-                    hWindow.SetLineStyle(new HTuple(10, 5));
-                    hWindow.DispRectangle1(_mouseStartRow, _mouseStartCol, e.Row, e.Column);
+                    if (AreaSelectionWindow != null)
+                    {
+                        RequestRepaint?.Invoke();
+                        try
+                        {
+                            double r1 = Math.Min(_mouseStartRow, e.Row);
+                            double c1 = Math.Min(_mouseStartCol, e.Column);
+                            double r2 = Math.Max(_mouseStartRow, e.Row);
+                            double c2 = Math.Max(_mouseStartCol, e.Column);
+                            AreaSelectionWindow.SetColor("green");
+                            AreaSelectionWindow.SetDraw("margin");
+                            AreaSelectionWindow.SetLineWidth(2);
+                            AreaSelectionWindow.SetLineStyle(new HTuple(10, 5));
+                            AreaSelectionWindow.DispRectangle1(r1, c1, r2, c2);
+                        }
+                        catch (HalconException) { /* 忽略绘制错误 */ }
+                    }
                     break;
             }
         }
@@ -306,9 +411,9 @@ namespace PreciseAlign.Controls
                         try
                         {
                             selectionRegion = new HRegion(r1, c1, r2, c2);
-                            if (_view.Graphics != null)
+                            if (Graphics != null)
                             {
-                                foreach (var shape in _view.Graphics.SelectMany(r => r.Shapes))
+                                foreach (var shape in Graphics.SelectMany(r => r.Shapes))
                                 {
                                     using (HRegion roiRegion = shape.GetRegion())
                                     using (HRegion intersection = selectionRegion.Intersection(roiRegion))
@@ -322,7 +427,7 @@ namespace PreciseAlign.Controls
                         }
                         catch (HalconException ex) { Debug.WriteLine($"区域选择失败: {ex.Message}"); }
                     }
-                    _view.FullRedraw();
+                    RequestRepaint?.Invoke();
                     break;
 
                 case InteractionState.CreatingShape:
@@ -335,13 +440,13 @@ namespace PreciseAlign.Controls
                         _selectedObjects.Add(_activeShape);
                     }
                     ActiveTool = ActiveToolMode.Selection;
-                    _view.RedrawSynchronous();
+                    RequestRepaint?.Invoke();
                     break;
 
                 case InteractionState.DraggingBody:
                 case InteractionState.DraggingHandle:
                     // --- 完成拖动/调整大小 ---
-                    _view.RedrawSynchronous();
+                    RequestRepaint?.Invoke();
                     break;
             }
 
@@ -352,11 +457,11 @@ namespace PreciseAlign.Controls
         }
         public void HandleDoubleClick(double row, double col)
         {
-            if (_view.Graphics == null || ActiveTool != ActiveToolMode.Selection) return;
+            if (Graphics == null || ActiveTool != ActiveToolMode.Selection) return;
 
-            // 1. 找到该点上的 *所有* 形状
+            // 1. 找到该点上的所有形状
             var allHits = new List<IShape>();
-            foreach (var shape in _view.Graphics.SelectMany(r => r.Shapes))
+            foreach (var shape in Graphics.SelectMany(r => r.Shapes))
             {
                 if (shape.HitTest(row, col).HasHit)
                 {
@@ -364,12 +469,17 @@ namespace PreciseAlign.Controls
                 }
             }
 
-            if (allHits.Count <= 1) return;
+            if (allHits.Count == 0) return;
+            if (allHits.Count == 1)
+            {
+                _selectedObjects.Clear();
+                _selectedObjects.Add(allHits[0]);
+                return;
+            }
 
-            // 2. 找到当前选中的
+            // 2. 循环选择逻辑
             var currentSelection = _selectedObjects.FirstOrDefault(s => allHits.Contains(s));
             int nextIndex = 0;
-
             if (currentSelection != null)
             {
                 int currentIndex = allHits.IndexOf(currentSelection);
@@ -377,8 +487,6 @@ namespace PreciseAlign.Controls
             }
 
             var shapeToSelect = allHits[nextIndex];
-
-            // 3. 循环选择
             _selectedObjects.Clear();
             _selectedObjects.Add(shapeToSelect);
 
@@ -399,12 +507,12 @@ namespace PreciseAlign.Controls
         #region 样式辅助
         private ShapeHitTestResult FindHitShape(double row, double col)
         {
-            if (_view.Graphics == null) return ShapeHitTestResult.NoHit;
+            if (Graphics == null) return ShapeHitTestResult.NoHit;
 
             // 迭代所有 ROI 和 Shapes
-            var allShapes = _view.Graphics.SelectMany(r => r.Shapes);
+            var allShapes = Graphics.SelectMany(r => r.Shapes);
 
-            // 优先命中选中的对象
+            // 优先检查已选中的（因为可能在拖拽控制柄） 
             foreach (var shape in _selectedObjects.Reverse())
             {
                 var result = shape.HitTest(row, col);
@@ -423,24 +531,16 @@ namespace PreciseAlign.Controls
 
         private void UpdateAllObjectStyles()
         {
-            if (_view.Graphics == null) return;
-            foreach (var shape in _view.Graphics.SelectMany(r => r.Shapes))
+            if (Graphics == null) return;
+            foreach (var shape in Graphics.SelectMany(r => r.Shapes))
             {
                 bool isSelected = _selectedObjects.Contains(shape);
                 shape.IsSelected = isSelected;
                 shape.Color = isSelected ? SELECTED_COLOR : DESELECTED_COLOR;
                 shape.IsInteractive = isSelected;
             }
-            _view.RedrawSynchronous(); // 强制重绘以显示样式
+            RequestRepaint?.Invoke(); // 强制重绘以显示样式
         }
-        #endregion
-
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
         #endregion
     }
 }

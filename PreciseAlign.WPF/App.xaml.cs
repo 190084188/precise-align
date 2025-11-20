@@ -24,7 +24,7 @@ namespace PreciseAlign.WPF
         }
 
         private void ConfigureServices(IServiceCollection services)
-        {            
+        {
             // 1. 注册基础服务和工厂
             // 注册日志服务
             services.AddSingleton<ILoggerService, LoggerService>();

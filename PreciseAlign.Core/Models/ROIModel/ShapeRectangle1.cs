@@ -1,9 +1,7 @@
 ﻿// Models/ShapeRectangle1.cs 
 using HalconDotNet;
-using System;
-using System.Diagnostics;
 
-namespace PreciseAlign.Controls.Models
+namespace PreciseAlign.Core.Models
 {
     public class ShapeRectangle1 : BaseShape
     {
@@ -29,7 +27,7 @@ namespace PreciseAlign.Controls.Models
         }
         public override void Draw(HWindow window)
         {
-            SetDrawingStyles(window); 
+            SetDrawingStyles(window);
             window.DispRectangle1(MinRow, MinCol, MaxRow, MaxCol);
 
             if (IsSelected && IsInteractive)
@@ -60,23 +58,23 @@ namespace PreciseAlign.Controls.Models
                 bool isHit = (row >= MinRow && row <= MaxRow && col >= MinCol && col <= MaxCol);
                 return isHit ? new ShapeHitTestResult(this, HitTestHandle.Body) : ShapeHitTestResult.NoHit;
             }
-            if (IsHandleHit(MinRow, MinCol, row, col)) 
+            if (IsHandleHit(MinRow, MinCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.TopLeft);
-            if (IsHandleHit(MinRow, CenterCol, row, col)) 
+            if (IsHandleHit(MinRow, CenterCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Top);
-            if (IsHandleHit(MinRow, MaxCol, row, col)) 
+            if (IsHandleHit(MinRow, MaxCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.TopRight);
-            if (IsHandleHit(CenterRow, MaxCol, row, col)) 
+            if (IsHandleHit(CenterRow, MaxCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Right);
             if (IsHandleHit(MaxRow, MaxCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.BottomRight);
-            if (IsHandleHit(MaxRow, CenterCol, row, col)) 
+            if (IsHandleHit(MaxRow, CenterCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Bottom);
-            if (IsHandleHit(MaxRow, MinCol, row, col)) 
+            if (IsHandleHit(MaxRow, MinCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.BottomLeft);
-            if (IsHandleHit(CenterRow, MinCol, row, col)) 
+            if (IsHandleHit(CenterRow, MinCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Left);
-            if (IsHandleHit(CenterRow, CenterCol, row, col)) 
+            if (IsHandleHit(CenterRow, CenterCol, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Center);
             if (row >= MinRow && row <= MaxRow && col >= MinCol && col <= MaxCol)
             {

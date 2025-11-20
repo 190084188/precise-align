@@ -43,7 +43,7 @@ namespace PreciseAlign.Test.ViewModels
         private void GenerateRoi()
         {
             // 生成一个矩形作为ROI
-            Graphics =  HDrawingObject.CreateDrawingObject(HDrawingObject.HDrawingObjectType.RECTANGLE1, 100, 100, 300, 400);
+            Graphics = HDrawingObject.CreateDrawingObject(HDrawingObject.HDrawingObjectType.RECTANGLE1, 100, 100, 300, 400);
         }
 
         private void LoadImage1()
@@ -101,5 +101,5 @@ namespace PreciseAlign.Test.ViewModels
         public void Execute(object? parameter) => _execute();
     }
 
-    
+
 }

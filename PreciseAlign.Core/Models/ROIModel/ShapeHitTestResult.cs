@@ -1,7 +1,5 @@
 ﻿// Models/ShapeHitTestResult.cs
-using System;
-
-namespace PreciseAlign.Controls.Models
+namespace PreciseAlign.Core.Models
 {
     /// <summary>
     /// 定义被命中的控制柄的类型

@@ -1,5 +1,4 @@
 ﻿using PreciseAlign.Core.Interfaces;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace PreciseAlign.WPF.Services.Camera

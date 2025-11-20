@@ -1,11 +1,10 @@
-﻿using HalconDotNet;
-using PreciseAlign.WPF.ViewModels;
+﻿using PreciseAlign.WPF.ViewModels;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 namespace PreciseAlign.WPF.Views
 {
-    public partial class MainWindow : Window, IMainWindowView
+    public partial class MainWindow : Window
     {
         private bool _isLightTheme = true;
 
@@ -13,19 +12,19 @@ namespace PreciseAlign.WPF.Views
         {
             InitializeComponent();
             this.DataContext = viewModel;
-            viewModel.View = this;
+            //viewModel.View = this;
         }
-        public void UpdateLeftDisplay(HObject image, HObject? results = null)
-        {
-            // 直接调用 HImageWindow 控件的高性能方法
-            LeftImageWindow.Image = image;
-        }
+        //public void UpdateLeftDisplay(HObject image, HObject? results = null)
+        //{
+        //    // 直接调用 HImageWindow 控件的高性能方法
+        //    LeftImageWindow.Image = image;
+        //}
 
-        public void UpdateRightDisplay(HObject image, HObject? results = null)
-        {
-            // 直接调用 HImageWindow 控件的高性能方法
-            RightImageWindow.Image = image;
-        }
+        //public void UpdateRightDisplay(HObject image, HObject? results = null)
+        //{
+        //    // 直接调用 HImageWindow 控件的高性能方法
+        //    RightImageWindow.Image = image;
+        //}
         private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
         {
             try

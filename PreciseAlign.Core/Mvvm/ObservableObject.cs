@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace PreciseAlign.Controls.Mvvm
+namespace PreciseAlign.Core.Mvvm
 {
     public abstract class ObservableObject : INotifyPropertyChanged
     {

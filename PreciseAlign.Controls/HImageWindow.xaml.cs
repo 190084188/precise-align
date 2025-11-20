@@ -1,11 +1,8 @@
 using HalconDotNet;
-using PreciseAlign.Controls.Models;
-using System;
-using System.Collections.Generic;
+using PreciseAlign.Core.Models;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,8 +13,6 @@ namespace PreciseAlign.Controls
     public partial class HImageWindow : UserControl
     {
         public HImageWindowViewModel ViewModel { get; }
-
-        // *** 1. 添加此标志 ***
         private bool _isWindowReady = false;
 
         #region 依赖属性
@@ -37,7 +32,7 @@ namespace PreciseAlign.Controls
         public static readonly DependencyProperty ResultGraphicsProperty =
             DependencyProperty.Register(
                 "ResultGraphics", typeof(HObject), typeof(HImageWindow),
-                new PropertyMetadata(null, OnImageChanged));
+                new PropertyMetadata(null, OnResultGraphicsChanged));
 
         public HObject Image
         {
@@ -69,10 +64,21 @@ namespace PreciseAlign.Controls
         public HImageWindow()
         {
             InitializeComponent();
-            ViewModel = new HImageWindowViewModel(this);
-            this.Loaded += OnHImageWindowLoaded;
-            this.Focusable = true;
-            this.PreviewKeyDown += HImageWindow_PreviewKeyDown;
+            ViewModel = new HImageWindowViewModel();
+            // 2. 订阅 VM 事件 -> 触发 View 行为
+            ViewModel.RequestRepaint += () => FullRedraw();
+            ViewModel.RequestAutoFit += () => SetPartToFitImage();
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(HImageWindowViewModel.ActiveTool))
+                {
+                    // 只有在 "Moving" 模式下，才允许 HALCON 原生拖拽
+                    HalconWindow.HMoveContent = ViewModel.ActiveTool == ActiveToolMode.Moving;
+                }
+            };
+            Loaded += OnHImageWindowLoaded;
+            Focusable = true;
+            PreviewKeyDown += HImageWindow_PreviewKeyDown;
         }
 
         private void HImageWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -82,8 +88,18 @@ namespace PreciseAlign.Controls
 
         private void OnHImageWindowLoaded(object sender, RoutedEventArgs e)
         {
-            this.Focus();
+            Focus();
             _isWindowReady = true;
+            if (HalconWindow.HalconWindow != null)
+            {
+                ViewModel.AreaSelectionWindow = HalconWindow.HalconWindow;
+                // 开启抗锯齿，让线条更平滑
+                // Ref: https://www.mvtec.com/doc/halcon/2105/en/set_window_param.html
+                HalconWindow.HalconWindow.SetWindowParam("anti_aliasing", "true");
+                HalconWindow.HalconWindow.SetWindowParam("graphics_stack_max_element_num", 500); // 优化重绘性能
+                //ViewModel.AreaSelectionWindow.SetFont("Arial-14-B"); // 预设字体
+            }
+            HalconWindow.HMoveContent = false;
             RedrawSynchronous();
         }
 
@@ -92,36 +108,37 @@ namespace PreciseAlign.Controls
         private static void OnImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var window = d as HImageWindow;
-            if (window != null)
+            if (window?.ViewModel == null) return;
+            // 同步到 VM
+            window.ViewModel.Image = e.NewValue as HObject;
+            // 释放旧的 HObject
+            if (e.OldValue is HObject oldImage && oldImage.IsInitialized())
             {
-                window.SetPartToFitImage();
-                window.RedrawSynchronous();
+                oldImage.Dispose();
             }
+            window.SetPartToFitImage();
+            window.RedrawSynchronous();
         }
 
         private static void OnGraphicsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as HImageWindow;
-            if (control == null) return;
+            if (control?.ViewModel == null) return;
+            var newCollection = e.NewValue as ObservableCollection<ROI>;
+            control.ViewModel.Graphics = newCollection ?? new ObservableCollection<ROI>();
+        }
 
-            if (e.OldValue is ObservableCollection<ROI> oldCollection)
+        private static void OnResultGraphicsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var window = d as HImageWindow;
+            if (window == null) return;
+            if (e.OldValue is HObject oldGraphics && oldGraphics.IsInitialized())
             {
-                oldCollection.CollectionChanged -= control.OnGraphicsCollectionChanged;
-                // 我们还需要取消订阅每个 ROI 内部的 Shapes 集合
-                foreach (var roi in oldCollection)
-                {
-                    roi.Shapes.CollectionChanged -= control.OnShapesCollectionChanged;
-                }
+                oldGraphics.Dispose();
             }
-            if (e.NewValue is ObservableCollection<ROI> newCollection)
-            {
-                newCollection.CollectionChanged += control.OnGraphicsCollectionChanged;
-                foreach (var roi in newCollection)
-                {
-                    roi.Shapes.CollectionChanged += control.OnShapesCollectionChanged;
-                }
-            }
-            control.RedrawSynchronous();
+
+            // ResultGraphics 变化时不需要 SetPartToFitImage
+            window.RedrawSynchronous();
         }
 
         private void OnGraphicsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -177,10 +194,11 @@ namespace PreciseAlign.Controls
 
             hWindow.ClearWindow();
 
-            if (Image != null && Image.IsInitialized())
+            if (ViewModel != null && ViewModel.Image != null && ViewModel.Image.IsInitialized())
             {
-                hWindow.DispObj(Image);
+                hWindow.DispObj(ViewModel.Image);
             }
+
             // --- 新的渲染循环 (遍历 ROI) ---
             if (Graphics != null)
             {
@@ -215,6 +233,7 @@ namespace PreciseAlign.Controls
         #region 绘制和选择ROI事件 (转发给VM)
         private void HalconWindow_HMouseDown(object sender, HSmartWindowControlWPF.HMouseEventArgsWPF e)
         {
+            this.Focus();
             ViewModel.HandleMouseDown(e);
         }
 
@@ -243,14 +262,15 @@ namespace PreciseAlign.Controls
         #region 辅助函数
         public void SetPartToFitImage()
         {
-            if (Image == null || !Image.IsInitialized()) return;
+            if (ViewModel == null || ViewModel.Image == null || !ViewModel.Image.IsInitialized())
+                return;
 
             // *** 保护 SetPartToFitImage ***
             if (!_isWindowReady || HalconWindow.HalconWindow == null) return;
 
             try
             {
-                HOperatorSet.SmallestRectangle1(Image, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
+                HOperatorSet.SmallestRectangle1(ViewModel.Image, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
                 double objHeight = row2.D - row1.D;
                 double objWidth = col2.D - col1.D;
                 if (objHeight <= 0 || objWidth <= 0) return;

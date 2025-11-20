@@ -1,8 +1,7 @@
 ﻿// Models/IShape.cs
 using HalconDotNet;
-using System;
 
-namespace PreciseAlign.Controls.Models
+namespace PreciseAlign.Core.Models
 {
     public interface IShape
     {

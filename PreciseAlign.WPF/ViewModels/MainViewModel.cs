@@ -10,14 +10,14 @@ using System.Windows.Threading;
 
 namespace PreciseAlign.WPF.ViewModels
 {
-    public interface IMainWindowView
+    public enum CameraSide
     {
-        void UpdateLeftDisplay(HObject image, HObject? results = null);
-        void UpdateRightDisplay(HObject image, HObject? results = null);
+        Left,
+        Right
     }
+
     public partial class MainViewModel : ObservableObject
     {
-        public IMainWindowView? View { get; set; }
         private readonly ICameraService? _cameraService;
         private readonly IVisionProcessor? _visionProcessor;
         private readonly IProcessConfigService _processConfig;
@@ -35,7 +35,7 @@ namespace PreciseAlign.WPF.ViewModels
         [ObservableProperty]
         private bool _isAltairCameraPresent;
 
-        // --- 图像和图形的绑定属性 (已重构) ---
+        // --- 图像和图形的绑定属性 ---
         [ObservableProperty]
         private HObject? _leftDisplayImage;
         [ObservableProperty]
@@ -43,9 +43,9 @@ namespace PreciseAlign.WPF.ViewModels
 
         // 用于用户交互的ROI
         [ObservableProperty]
-        private ObservableCollection<HDrawingObject> _leftDisplayInteractiveGraphics = new();
+        private ObservableCollection<ROI> _leftDisplayInteractiveGraphics = new();
         [ObservableProperty]
-        private ObservableCollection<HDrawingObject> _rightDisplayInteractiveGraphics = new();
+        private ObservableCollection<ROI> _rightDisplayInteractiveGraphics = new();
 
         // 用于显示算法静态结果的属性
         [ObservableProperty]
@@ -74,6 +74,11 @@ namespace PreciseAlign.WPF.ViewModels
 
         private void InitializeCameras()
         {
+            if (_cameraService == null)
+            {
+                _logger.LogError("初始化相机时，相机服务初始化失败");
+                return;
+            }
             _logger.LogInfo("开始初始化所有已配置的相机...");
             if (!_cameraService.AllCameras.Any())
             {
@@ -141,6 +146,11 @@ namespace PreciseAlign.WPF.ViewModels
         }
         private void SubscribeToCamera(string cameraId, EventHandler<ImageReadyEventArgs> handler, bool isLeft)
         {
+            if (_cameraService == null)
+            {
+                _logger.LogError("订阅相机时，相机服务初始化失败");
+                return;
+            }
             var camera = _cameraService.GetCamera(cameraId);
             if (camera != null && camera.IsConnected)
             {
@@ -197,23 +207,18 @@ namespace PreciseAlign.WPF.ViewModels
 
         private void OnLeftCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
-            var imageForDisplay = e.Image.Clone();
-            View?.UpdateLeftDisplay(imageForDisplay);
-            ProcessLeftImageAsync(e.Image);
+            ProcessCameraImageAsync(e.Image, CameraSide.Left);
         }
 
         private void OnRightCameraImageReady(object? sender, ImageReadyEventArgs e)
         {
-            var imageForDisplay = e.Image.Clone();
-            View?.UpdateRightDisplay(imageForDisplay);
-            ProcessRightImageAsync(e.Image); // 保持注释，或创建对应方法
+            ProcessCameraImageAsync(e.Image, CameraSide.Right);
         }
-
-        private async void ProcessLeftImageAsync(HImage image)
+        private async void ProcessCameraImageAsync(HImage image, CameraSide side)
         {
-            if (_visionProcessor == null)
+            if (_visionProcessor == null || image == null || !image.IsInitialized())
             {
-                image.Dispose();
+                image?.Dispose(); // 确保释放传入的资源
                 return;
             }
 
@@ -221,31 +226,17 @@ namespace PreciseAlign.WPF.ViewModels
 
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                // 1. 释放旧的图像和静态结果
-                LeftDisplayImage?.Dispose();
-                LeftDisplayResultGraphics?.Dispose(); // 释放旧的 HObject 结果
-
-                // 2. 赋新值给绑定属性。这将触发HImageWindow的FullRedraw()
-                // 从而确保在一个干净的画布上显示最终结果。
-                LeftDisplayImage = result.ProcessedImage;       // 这是处理过的图像
-                LeftDisplayResultGraphics = result.ResultGraphics; // 这是识别到的特征等结果
-            });
-        }
-
-        private async void ProcessRightImageAsync(HImage image)
-        {
-            if (_visionProcessor == null)
-            {
-                image.Dispose();
-                return;
-            }
-            var result = await _visionProcessor.ProcessImageAsync(image, CurrentStepName);
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                RightDisplayImage?.Dispose();
-                RightDisplayResultGraphics?.Dispose();
-                RightDisplayImage = result.ProcessedImage;
-                RightDisplayResultGraphics = result.ResultGraphics;
+                switch (side)
+                {
+                    case CameraSide.Left:
+                        LeftDisplayImage = result.ProcessedImage;
+                        LeftDisplayResultGraphics = result.ResultGraphics;
+                        break;
+                    case CameraSide.Right:
+                        RightDisplayImage = result.ProcessedImage;
+                        RightDisplayResultGraphics = result.ResultGraphics;
+                        break;
+                }
             });
         }
 
@@ -257,6 +248,7 @@ namespace PreciseAlign.WPF.ViewModels
         [RelayCommand]
         private async Task StartAlignment()
         {
+
         }
 
         public void Dispose()

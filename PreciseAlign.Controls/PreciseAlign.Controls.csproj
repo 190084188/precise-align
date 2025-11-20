@@ -19,4 +19,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PreciseAlign.Core\PreciseAlign.Core.csproj" />
+  </ItemGroup>
+
 </Project>

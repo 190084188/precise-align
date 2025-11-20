@@ -1,12 +1,9 @@
 ﻿// Models/ROI.cs
 using HalconDotNet;
-using PreciseAlign.Controls.Mvvm;
-using System;
-using System.Collections.Generic;
+using PreciseAlign.Core.Mvvm;
 using System.Collections.ObjectModel;
-using System.Linq;
 
-namespace PreciseAlign.Controls.Models
+namespace PreciseAlign.Core.Models
 {
     // (我们稍后将添加 JSON 序列化功能)
 

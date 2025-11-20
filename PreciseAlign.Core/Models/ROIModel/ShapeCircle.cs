@@ -1,8 +1,7 @@
 ﻿// Models/ShapeCircle.cs (已修复)
 using HalconDotNet;
-using System;
 
-namespace PreciseAlign.Controls.Models
+namespace PreciseAlign.Core.Models
 {
     public class ShapeCircle : BaseShape
     {
@@ -51,15 +50,15 @@ namespace PreciseAlign.Controls.Models
                 return (distance <= Radius) ? new ShapeHitTestResult(this, HitTestHandle.Body) : ShapeHitTestResult.NoHit;
             }
 
-            if (IsHandleHit(Row - Radius, Column, row, col)) 
+            if (IsHandleHit(Row - Radius, Column, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Top); // North
-            if (IsHandleHit(Row + Radius, Column, row, col)) 
+            if (IsHandleHit(Row + Radius, Column, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Bottom); // South
-            if (IsHandleHit(Row, Column + Radius, row, col)) 
+            if (IsHandleHit(Row, Column + Radius, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Right); // East
-            if (IsHandleHit(Row, Column - Radius, row, col)) 
+            if (IsHandleHit(Row, Column - Radius, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Left); // West
-            if (IsHandleHit(Row, Column, row, col)) 
+            if (IsHandleHit(Row, Column, row, col))
                 return new ShapeHitTestResult(this, HitTestHandle.Center);
 
             // 检查 Body

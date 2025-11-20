@@ -23,7 +23,7 @@ namespace PreciseAlign.WPF.Services
         /// </summary>
         public void LogInfo(string message)
         {
-            _log.Info("[信息]:"+message);
+            _log.Info("[信息]:" + message);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace PreciseAlign.WPF.Services
         /// </summary>
         public void LogDebug(string message)
         {
-            _log.Debug("[调试]:"+message);
+            _log.Debug("[调试]:" + message);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace PreciseAlign.WPF.Services
         public void LogError(string message, Exception ex)
         {
             // log4net会自动处理异常的堆栈跟踪信息
-            _log.Error("[错误]:"+message, ex);
+            _log.Error("[错误]:" + message, ex);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace PreciseAlign.WPF.Services
         /// </summary>
         public void LogWarning(string message)
         {
-            _log.Warn("[警告]:"+message);
+            _log.Warn("[警告]:" + message);
         }
     }
 }

@@ -1,8 +1,7 @@
 ﻿using HalconDotNet;
-using System.Windows;
-using System.IO;
-using System;
 using PreciseAlign.Test.ViewModels;
+using System.IO;
+using System.Windows;
 
 namespace PreciseAlign.Test
 {
@@ -71,7 +70,7 @@ namespace PreciseAlign.Test
                         break;
                     case 2:
                         // 创建正弦波图像
-                        HOperatorSet.GenImage1Rect(out HObject sinImage, "byte", 128, 50,1,8,8,"false",0);
+                        HOperatorSet.GenImage1Rect(out HObject sinImage, "byte", 128, 50, 1, 8, 8, "false", 0);
                         CurrentImage = sinImage;
                         break;
                 }
